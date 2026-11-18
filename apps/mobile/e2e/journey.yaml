@@ -1,0 +1,16 @@
+# Runs after onboarding.yaml in the same session (app already on the dashboard,
+# tour dismissed). Plans and starts a monitored journey.
+appId: com.vaira.app
+---
+- tapOn: { id: "plan-journey" }
+- inputText: { id: "journey-to", text: "MG Road, Bengaluru" }
+- tapOn: "Cab / Taxi"
+# T1: real testID is journey-safeword (was the stale journey-safe-word).
+- inputText: { id: "journey-safeword", text: "purple kettle" }
+# T1: selfie is a two-tap — first tap opens the camera (selfie-capture "open"),
+# second tap captures the frame (same id persists across the branch switch).
+# Emulator virtual scene supplies the selfie frame.
+- tapOn: { id: "selfie-capture" }
+- tapOn: { id: "selfie-capture" }
+- tapOn: { id: "journey-start" }
+- assertVisible: "JOURNEY ACTIVE · SAFE"

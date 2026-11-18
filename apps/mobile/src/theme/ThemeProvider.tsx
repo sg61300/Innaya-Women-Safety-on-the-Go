@@ -1,0 +1,29 @@
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useColorScheme } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { palettes, isDarkPalette, type PaletteKey, type Palette } from "./palettes";
+import { deriveTokens, type DerivedTokens } from "./derive";
+import i18n from "../i18n";
+export type Choice = PaletteKey | "system";
+export type Theme = { palette: PaletteKey; isDark: boolean; p: Palette; d: DerivedTokens; choice: Choice; setPalette: (c: Choice) => Promise<void> };
+const KEY = "vaira.palette";
+const Ctx = createContext<Theme | null>(null);
+export function ThemeProvider({ children, initial = "system" }: { children: React.ReactNode; initial?: Choice }) {
+  const scheme = useColorScheme();
+  const [choice, setChoice] = useState<Choice>(initial);
+  const [languageRevision, setLanguageRevision] = useState(0);
+  useEffect(() => { AsyncStorage.getItem(KEY).then(v => { if (v) setChoice(v as Choice); }).catch(() => {}); }, []);
+  useEffect(() => {
+    const onLanguageChanged = () => setLanguageRevision((n) => n + 1);
+    i18n.on("languageChanged", onLanguageChanged);
+    return () => { i18n.off("languageChanged", onLanguageChanged); };
+  }, []);
+  const value = useMemo<Theme>(() => {
+    const palette: PaletteKey = choice === "system" ? (scheme === "dark" ? "midnight" : "violetBloom") : choice;
+    const isDark = isDarkPalette(palette); const p = palettes[palette];
+    return { palette, isDark, p, d: deriveTokens(p, isDark), choice,
+      setPalette: async (c) => { setChoice(c); try { await AsyncStorage.setItem(KEY, c); } catch (e) { console.warn("[theme] persist failed", e); } console.log("[theme] palette", c); } };
+  }, [choice, scheme, languageRevision]);
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
+export function useTheme(): Theme { const t = useContext(Ctx); if (!t) throw new Error("useTheme outside ThemeProvider"); return t; }

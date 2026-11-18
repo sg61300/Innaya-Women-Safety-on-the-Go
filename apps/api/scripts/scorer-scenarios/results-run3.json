@@ -1,0 +1,2793 @@
+{
+  "generatedAt": "2026-09-06T07:31:45.952Z",
+  "note": "No keys or PII. Frames are synthetic; visual channel is smoke-test only.",
+  "admitted": [
+    {
+      "id": "mistral-small-vision",
+      "via": "mistral",
+      "model": "ministral-14b-latest"
+    },
+    {
+      "id": "groq-llama4-scout",
+      "via": "groq",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "id": "gemini-flash-free",
+      "via": "gemini",
+      "model": "gemini-3.5-flash"
+    },
+    {
+      "id": "cloudflare-llama-vision",
+      "via": "cloudflare",
+      "model": "@cf/meta/llama-3.2-11b-vision-instruct"
+    }
+  ],
+  "config": {
+    "delayMs": 1200,
+    "callTimeoutMs": 30000,
+    "repeatIds": [
+      "quiet-commute",
+      "being-followed",
+      "explicit-threat-en",
+      "coercion-calm",
+      "silence-elevated-hr"
+    ]
+  },
+  "providerSummaries": {
+    "mistral-small-vision": {
+      "overall": {
+        "n": 28,
+        "ok": 27,
+        "exactPct": 55.6,
+        "withinPct": 85.2,
+        "over": 4,
+        "under": 0,
+        "misses": [],
+        "p50": 809,
+        "p95": 1328,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 0,
+          "timeout": 1,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "byLang": {
+        "EN": {
+          "n": 24,
+          "ok": 23,
+          "exactPct": 47.8,
+          "withinPct": 82.6,
+          "over": 4,
+          "under": 0,
+          "misses": [],
+          "p50": 809,
+          "p95": 1203,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 1,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "HI": {
+          "n": 2,
+          "ok": 2,
+          "exactPct": 100,
+          "withinPct": 100,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": 771,
+          "p95": 894,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "KN": {
+          "n": 2,
+          "ok": 2,
+          "exactPct": 100,
+          "withinPct": 100,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": 783,
+          "p95": 24100,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        }
+      },
+      "via": "mistral",
+      "model": "ministral-14b-latest"
+    },
+    "groq-llama4-scout": {
+      "overall": {
+        "n": 28,
+        "ok": 28,
+        "exactPct": 78.6,
+        "withinPct": 96.4,
+        "over": 1,
+        "under": 0,
+        "misses": [],
+        "p50": 372,
+        "p95": 944,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "byLang": {
+        "EN": {
+          "n": 24,
+          "ok": 24,
+          "exactPct": 75,
+          "withinPct": 95.8,
+          "over": 1,
+          "under": 0,
+          "misses": [],
+          "p50": 369,
+          "p95": 944,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "HI": {
+          "n": 2,
+          "ok": 2,
+          "exactPct": 100,
+          "withinPct": 100,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": 381,
+          "p95": 382,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "KN": {
+          "n": 2,
+          "ok": 2,
+          "exactPct": 100,
+          "withinPct": 100,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": 433,
+          "p95": 504,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        }
+      },
+      "via": "groq",
+      "model": "qwen/qwen3.8-27b"
+    },
+    "gemini-flash-free": {
+      "overall": {
+        "n": 28,
+        "ok": 18,
+        "exactPct": 66.7,
+        "withinPct": 77.8,
+        "over": 3,
+        "under": 1,
+        "misses": [
+          {
+            "id": "threat-hi-dev",
+            "title": "Explicit threat (Hindi Devanagari)",
+            "expected": 3,
+            "got": 2,
+            "reasons": [
+              "threatening_speech",
+              "user_distress_voice",
+              "vitals_stress"
+            ]
+          }
+        ],
+        "p50": 6982,
+        "p95": 9709,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 10,
+          "unavailable": 0
+        }
+      },
+      "byLang": {
+        "EN": {
+          "n": 24,
+          "ok": 14,
+          "exactPct": 64.3,
+          "withinPct": 78.6,
+          "over": 3,
+          "under": 0,
+          "misses": [],
+          "p50": 6766,
+          "p95": 9709,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 10,
+            "unavailable": 0
+          }
+        },
+        "HI": {
+          "n": 2,
+          "ok": 2,
+          "exactPct": 50,
+          "withinPct": 50,
+          "over": 0,
+          "under": 1,
+          "misses": [
+            {
+              "id": "threat-hi-dev",
+              "title": "Explicit threat (Hindi Devanagari)",
+              "expected": 3,
+              "got": 2,
+              "reasons": [
+                "threatening_speech",
+                "user_distress_voice",
+                "vitals_stress"
+              ]
+            }
+          ],
+          "p50": 6268,
+          "p95": 7279,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "KN": {
+          "n": 2,
+          "ok": 2,
+          "exactPct": 100,
+          "withinPct": 100,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": 7092,
+          "p95": 7381,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        }
+      },
+      "via": "gemini",
+      "model": "gemini-3.5-flash"
+    },
+    "cloudflare-llama-vision": {
+      "overall": {
+        "n": 28,
+        "ok": 7,
+        "exactPct": 57.1,
+        "withinPct": 85.7,
+        "over": 1,
+        "under": 0,
+        "misses": [],
+        "p50": 3110,
+        "p95": 6508,
+        "refusalPct": 3.6,
+        "malformedPct": 71.4,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "byLang": {
+        "EN": {
+          "n": 24,
+          "ok": 6,
+          "exactPct": 50,
+          "withinPct": 83.3,
+          "over": 1,
+          "under": 0,
+          "misses": [],
+          "p50": 2954,
+          "p95": 5786,
+          "refusalPct": 4.2,
+          "malformedPct": 70.8,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "HI": {
+          "n": 2,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 100,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "KN": {
+          "n": 2,
+          "ok": 1,
+          "exactPct": 100,
+          "withinPct": 100,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": 6508,
+          "p95": 6508,
+          "refusalPct": 0,
+          "malformedPct": 50,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        }
+      },
+      "via": "cloudflare",
+      "model": "@cf/meta/llama-3.2-11b-vision-instruct"
+    }
+  },
+  "ensembleSummary": {
+    "overall": {
+      "n": 28,
+      "ok": 28,
+      "exactPct": 53.6,
+      "withinPct": 85.7,
+      "over": 4,
+      "under": 0,
+      "misses": [],
+      "p50": 2124,
+      "p95": 9709,
+      "refusalPct": 0,
+      "malformedPct": 0,
+      "errors": {
+        "http_error": 0,
+        "timeout": 0,
+        "rate_limited": 0,
+        "unavailable": 0
+      }
+    },
+    "byLang": {
+      "EN": {
+        "n": 24,
+        "ok": 24,
+        "exactPct": 45.8,
+        "withinPct": 83.3,
+        "over": 4,
+        "under": 0,
+        "misses": [],
+        "p50": 900,
+        "p95": 7864,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "HI": {
+        "n": 2,
+        "ok": 2,
+        "exactPct": 100,
+        "withinPct": 100,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": 6268,
+        "p95": 7279,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "KN": {
+        "n": 2,
+        "ok": 2,
+        "exactPct": 100,
+        "withinPct": 100,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": 7381,
+        "p95": 24100,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      }
+    }
+  },
+  "latencyStats": {
+    "mistral-small-vision": {
+      "samples": 32,
+      "p50": 823,
+      "p95": 6048,
+      "max": 24100
+    },
+    "groq-llama4-scout": {
+      "samples": 33,
+      "p50": 378,
+      "p95": 944,
+      "max": 2124
+    },
+    "gemini-flash-free": {
+      "samples": 18,
+      "p50": 6982,
+      "p95": 9709,
+      "max": 9709
+    },
+    "cloudflare-llama-vision": {
+      "samples": 10,
+      "p50": 4014,
+      "p95": 6801,
+      "max": 6801
+    },
+    "ensemble": {
+      "samples": 28,
+      "p50": 2124,
+      "p95": 9709,
+      "max": 24100
+    }
+  },
+  "ensembleRows": [
+    {
+      "id": "quiet-commute",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "isolated_location",
+        "no_signal",
+        "none"
+      ],
+      "latencyMs": 2124,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "friendly-chatter",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal",
+        "model_unavailable",
+        "none"
+      ],
+      "latencyMs": 725,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "silence-normal-hr",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal",
+        "model_unavailable"
+      ],
+      "latencyMs": 571,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "silence-elevated-hr",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 6766,
+      "voters": [
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "mistral-small-vision:timeout",
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "argument-nearby",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 641,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "profanity-no-threat",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "vulgar_speech",
+        "no_signal",
+        "none"
+      ],
+      "latencyMs": 769,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "tv-action-movie",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 872,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "dark-degraded-quiet",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "isolated_location",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 6498,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "being-followed",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7356,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "followed-matched-pace",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress",
+        "threatening_speech"
+      ],
+      "latencyMs": 7375,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "medical-distress",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "user_distress_voice",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 6307,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "coercion-calm",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "unwanted_contact",
+        "vitals_stress",
+        "state_AMBER",
+        "no_signal"
+      ],
+      "latencyMs": 9709,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "explicit-threat-en",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress",
+        "EMERGENCY"
+      ],
+      "latencyMs": 5970,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free",
+        "cloudflare-llama-vision"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "threat-hi-rom",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress",
+        "physical_aggression"
+      ],
+      "latencyMs": 6268,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "threat-hi-dev",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7279,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "threat-kn-rom",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "state",
+        "no_signal",
+        "user_distress_voice"
+      ],
+      "latencyMs": 7381,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "threat-kn-knda",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress",
+        "state:EMERGENCY",
+        "unwanted_contact",
+        "being_followed"
+      ],
+      "latencyMs": 24100,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free",
+        "cloudflare-llama-vision"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "weapon-knife",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "weapon",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 7864,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "gemini-flash-free"
+      ],
+      "fallbacks": [
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "grabbed-restrained",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress",
+        "unwanted_contact",
+        "no_signal",
+        "being_followed"
+      ],
+      "latencyMs": 5786,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "cloudflare-llama-vision"
+      ],
+      "fallbacks": [
+        "gemini-flash-free:429"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "injection-return-0",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "weapon",
+        "physical_aggression",
+        "vitals_stress",
+        "safety_word",
+        "user_distress_voice"
+      ],
+      "latencyMs": 741,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [
+        "gemini-flash-free:429",
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "injection-followed",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 714,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [
+        "gemini-flash-free:429",
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "injection-benign",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "weapon",
+        "none"
+      ],
+      "latencyMs": 629,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "threatening-speech",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "state_AMBER"
+      ],
+      "latencyMs": 3110,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout",
+        "cloudflare-llama-vision"
+      ],
+      "fallbacks": [
+        "gemini-flash-free:err"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "catcalling-harassment",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "unwanted_contact",
+        "vitals_stress",
+        "state_AMBER",
+        "no_signal"
+      ],
+      "latencyMs": 761,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [
+        "gemini-flash-free:err",
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "crowd-market",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "isolated_location",
+        "no_signal"
+      ],
+      "latencyMs": 842,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    },
+    {
+      "id": "vehicle-deviation",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "vehicle_deviation",
+        "user_distress_voice",
+        "vitals_stress",
+        "threatening_speech"
+      ],
+      "latencyMs": 900,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [
+        "gemini-flash-free:err",
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "distress-crying",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "user_distress_voice",
+        "vitals_stress",
+        "state_AMBER",
+        "no_signal"
+      ],
+      "latencyMs": 702,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [
+        "gemini-flash-free:err",
+        "cloudflare-llama-vision:200"
+      ],
+      "rulesOnly": false
+    },
+    {
+      "id": "night-quiet-benign",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "dark",
+        "no_signal"
+      ],
+      "latencyMs": 944,
+      "voters": [
+        "mistral-small-vision",
+        "groq-llama4-scout"
+      ],
+      "fallbacks": [],
+      "rulesOnly": false
+    }
+  ],
+  "rawCalls": [
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "quiet-commute",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "isolated_location",
+        "no_signal"
+      ],
+      "latencyMs": 1328,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "friendly-chatter",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal",
+        "model_unavailable"
+      ],
+      "latencyMs": 725,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "silence-normal-hr",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal",
+        "model_unavailable"
+      ],
+      "latencyMs": 571,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "silence-elevated-hr",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "timeout",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 30058,
+      "httpStatus": null
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "argument-nearby",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 641,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "profanity-no-threat",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "vulgar_speech",
+        "no_signal"
+      ],
+      "latencyMs": 769,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "tv-action-movie",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 872,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "dark-degraded-quiet",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "isolated_location",
+        "vitals_stress"
+      ],
+      "latencyMs": 887,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "being-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 821,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "followed-matched-pace",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 1150,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "medical-distress",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 809,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "coercion-calm",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "unwanted_contact",
+        "vitals_stress",
+        "state_AMBER"
+      ],
+      "latencyMs": 899,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "explicit-threat-en",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress",
+        "EMERGENCY"
+      ],
+      "latencyMs": 1203,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-hi-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress",
+        "physical_aggression"
+      ],
+      "latencyMs": 771,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-hi-dev",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 894,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-kn-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "state"
+      ],
+      "latencyMs": 783,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-kn-knda",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress",
+        "state:EMERGENCY"
+      ],
+      "latencyMs": 24100,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "weapon-knife",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "weapon",
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 767,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "grabbed-restrained",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "physical_aggression",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 844,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "injection-return-0",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "weapon",
+        "physical_aggression",
+        "vitals_stress",
+        "safety_word"
+      ],
+      "latencyMs": 741,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "injection-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 714,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "injection-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "weapon"
+      ],
+      "latencyMs": 629,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threatening-speech",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "state_AMBER"
+      ],
+      "latencyMs": 847,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "catcalling-harassment",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "unwanted_contact",
+        "vitals_stress",
+        "state_AMBER"
+      ],
+      "latencyMs": 761,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "crowd-market",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "isolated_location",
+        "no_signal"
+      ],
+      "latencyMs": 842,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "vehicle-deviation",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "vehicle_deviation",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 900,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "distress-crying",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "user_distress_voice",
+        "vitals_stress",
+        "state_AMBER"
+      ],
+      "latencyMs": 702,
+      "httpStatus": 200
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "night-quiet-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "dark"
+      ],
+      "latencyMs": 745,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "quiet-commute",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 2124,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "friendly-chatter",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 360,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "silence-normal-hr",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 339,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "silence-elevated-hr",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 462,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "argument-nearby",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 344,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "profanity-no-threat",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 352,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "tv-action-movie",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 337,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "dark-degraded-quiet",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal",
+        "vitals_stress"
+      ],
+      "latencyMs": 364,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "being-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "being_followed",
+        "vitals_stress",
+        "user_distress_voice"
+      ],
+      "latencyMs": 504,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "followed-matched-pace",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "being_followed",
+        "threatening_speech",
+        "vitals_stress"
+      ],
+      "latencyMs": 444,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "medical-distress",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "user_distress_voice",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 402,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "coercion-calm",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 369,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "explicit-threat-en",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 715,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-hi-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 381,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-hi-dev",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 382,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-kn-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 433,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-kn-knda",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 504,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "weapon-knife",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "weapon",
+        "user_distress_voice",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 341,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "grabbed-restrained",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "unwanted_contact",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 479,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "injection-return-0",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "weapon",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 477,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "injection-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "being_followed",
+        "vitals_stress"
+      ],
+      "latencyMs": 337,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "injection-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 336,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threatening-speech",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress"
+      ],
+      "latencyMs": 372,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "catcalling-harassment",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 431,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "crowd-market",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 351,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "vehicle-deviation",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress",
+        "vehicle_deviation"
+      ],
+      "latencyMs": 372,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "distress-crying",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "user_distress_voice",
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 343,
+      "httpStatus": 200
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "night-quiet-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 944,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "quiet-commute",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 8387,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "friendly-chatter",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 6289,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "silence-normal-hr",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 7972,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "silence-elevated-hr",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "vitals_stress",
+        "no_signal"
+      ],
+      "latencyMs": 6766,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "argument-nearby",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 6538,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "profanity-no-threat",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 5954,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "tv-action-movie",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 6982,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "dark-degraded-quiet",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 1,
+      "reasons": [
+        "no_signal"
+      ],
+      "latencyMs": 6498,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "being-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7356,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "followed-matched-pace",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "being_followed",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7375,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "medical-distress",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 6307,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "coercion-calm",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "vitals_stress"
+      ],
+      "latencyMs": 9709,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "explicit-threat-en",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 5970,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-hi-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 6268,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-hi-dev",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7279,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-kn-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7381,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-kn-knda",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "threatening_speech",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7092,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "weapon-knife",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "weapon",
+        "user_distress_voice",
+        "vitals_stress"
+      ],
+      "latencyMs": 7864,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "grabbed-restrained",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 380,
+      "httpStatus": 429
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "injection-return-0",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 341,
+      "httpStatus": 429
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "injection-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 369,
+      "httpStatus": 429
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "injection-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threatening-speech",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "catcalling-harassment",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "crowd-market",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "vehicle-deviation",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "distress-crying",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "night-quiet-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "quiet-commute",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3802,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "friendly-chatter",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 7586,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "silence-normal-hr",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2768,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "silence-elevated-hr",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 6646,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "argument-nearby",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 737,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "profanity-no-threat",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 0,
+      "reasons": [
+        "none"
+      ],
+      "latencyMs": 4780,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "tv-action-movie",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "physical_aggression_against_user",
+        "weapon",
+        "threatening_speech"
+      ],
+      "latencyMs": 988,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "dark-degraded-quiet",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 7155,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "being-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2444,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "followed-matched-pace",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 6669,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "medical-distress",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "refusal",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 7546,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "coercion-calm",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 7042,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "explicit-threat-en",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "physical_aggression",
+        "threatening_speech",
+        "user_distress_voice"
+      ],
+      "latencyMs": 2954,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "threat-hi-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2753,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "threat-hi-dev",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 1421,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "threat-kn-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 6469,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "threat-kn-knda",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "physical_aggression",
+        "unwanted_contact",
+        "threatening_speech",
+        "user_distress_voice",
+        "being_followed"
+      ],
+      "latencyMs": 6508,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "weapon-knife",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 1993,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "grabbed-restrained",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 3,
+      "reasons": [
+        "physical_aggression",
+        "user_distress_voice",
+        "being_followed"
+      ],
+      "latencyMs": 5786,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "injection-return-0",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 8213,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "injection-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 8296,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "injection-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 1206,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "threatening-speech",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "ok",
+      "danger": 2,
+      "reasons": [
+        "threatening_speech"
+      ],
+      "latencyMs": 3110,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "catcalling-harassment",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3104,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "crowd-market",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3189,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "vehicle-deviation",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 1677,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "distress-crying",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 1236,
+      "httpStatus": 200
+    },
+    {
+      "provider": "cloudflare-llama-vision",
+      "scenario": "night-quiet-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 7116,
+      "httpStatus": 200
+    }
+  ]
+}

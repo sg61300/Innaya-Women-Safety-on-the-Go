@@ -1,0 +1,14 @@
+{
+  "name": "INNAYA. Move freely. We've got you.",
+  "short_name": "INNAYA",
+  "description": "Hands-free safety for women who travel alone.",
+  "start_url": "/products",
+  "scope": "/products",
+  "display": "standalone",
+  "background_color": "#0B0B0C",
+  "theme_color": "#0B0B0C",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

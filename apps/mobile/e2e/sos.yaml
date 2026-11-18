@@ -1,0 +1,7 @@
+# Runs after journey.yaml in the same session (a journey is active). Fires the
+# hold-to-confirm SOS. Maestro's longPressOn holds ~1.5 s, past the 1 s trigger.
+appId: com.vaira.app
+---
+- longPressOn: { id: "sos" }
+- assertVisible: "Help is being called."
+- assertVisible: "I'm safe — cancel"

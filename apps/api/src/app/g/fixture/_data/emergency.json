@@ -1,0 +1,25 @@
+{
+  "name": "Priya",
+  "phone": "9876543210",
+  "fromLabel": "Sector 18 Metro, Noida",
+  "toLabel": "Rajiv Chowk, Connaught Place, New Delhi",
+  "state": "EMERGENCY",
+  "archived": false,
+  "live": true,
+  "battery": 0.38,
+  "lat": 28.571,
+  "lng": 77.326,
+  "locOffsetSec": -14,
+  "lastContactOffsetSec": -8,
+  "frameUrls": [],
+  "frameOffsetsSec": [],
+  "mapEmbedSrc": null,
+  "history": [
+    { "state": "EMERGENCY", "offsetSec": -95 },
+    { "state": "AMBER", "offsetSec": -300 },
+    { "state": "SAFE", "offsetSec": -640 },
+    { "state": "ARMED", "offsetSec": -700 },
+    { "state": "SAFE", "offsetSec": -90000 },
+    { "state": "ARMED", "offsetSec": -90400 }
+  ]
+}

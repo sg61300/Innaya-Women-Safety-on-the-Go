@@ -1,0 +1,42 @@
+# The Vercel project root is apps/api; keep only API/workspace inputs in the upload.
+apps/mobile/
+latest-apk/
+Sessions/
+assets/
+Hardware/
+Design/
+PRD/
+Roadmap/
+Legal/
+Decisions/
+Architecture/
+Tasks/
+Past Mistakes and Lessons/
+*.apk
+*.aab
+*.zip
+*.step
+*.stl
+*.glb
+*.png
+*.jpg
+*.jpeg
+*.webp
+!public/
+!public/**/*.webp
+!public/**/*.png
+!apps/api/public/
+!apps/api/public/**/*.webp
+!public/**/*.png
+!apps/api/public/**/*.png
+# Next.js file-convention favicons live under src/app, which *.png also excludes.
+!apps/api/src/app/icon.png
+!apps/api/src/app/apple-icon.png
+!apps/api/public/download/
+# ADR-043 item 8: exactly one tester APK ships under the stable channel name.
+# The android-release-apk workflow copies each new build to this path.
+!apps/api/public/download/vaira-mvp.apk
+node_modules/
+.git/
+.next/
+apps/api/.next/

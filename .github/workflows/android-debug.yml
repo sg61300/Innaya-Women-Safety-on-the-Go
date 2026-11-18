@@ -1,0 +1,71 @@
+name: android-debug-apk
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, task/mobile-w2, task/mobile-w3, task/sensors-w3]
+    paths:
+      - apps/mobile/package.json
+      - apps/mobile/app.config.ts
+      - apps/mobile/plugins/**
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/workflows/android-debug.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # s25 lane E2: skip the obsolete SDK `tools` package that setup-android@v3
+      # installs by default (removed from Google's repo -> "Failed to find package
+      # 'tools'" exit 1). Use the runner's preinstalled SDK. Fable to review.
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: ""
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: npx expo prebuild --platform android --clean --no-install
+        working-directory: apps/mobile
+        env:
+          GOOGLE_MAPS_ANDROID_KEY: ${{ secrets.GOOGLE_MAPS_ANDROID_KEY }}
+
+      - run: ./gradlew assembleDebug --no-daemon --stacktrace -PreactNativeArchitectures=x86_64 --max-workers=2 2>&1 | tee gradle-build.log
+        working-directory: apps/mobile/android
+
+      - if: always()
+        run: tail -c 12000 apps/mobile/android/gradle-build.log || true
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-log
+          path: apps/mobile/android/gradle-build.log
+          retention-days: 7
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+          if-no-files-found: error

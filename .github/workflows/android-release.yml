@@ -1,0 +1,234 @@
+name: android-release-apk
+
+# Builds the RELEASE arm64-v8a phone APK (b15) on GitHub Actions.
+# Substitute for `eas build --profile phone` while the EAS free-plan Android
+# quota is exhausted (resets 1 Oct). Mirrors the `phone` EAS profile
+# (apps/mobile/eas.json: extends `preview`, buildType apk, arm64-v8a only) and
+# the release size levers from app.config.ts (R8/ProGuard + shrinkResources +
+# useLegacyPackaging + keep rules, written by expo-build-properties at prebuild).
+#
+# workflow_dispatch only — never builds on push.
+#
+# ---------------------------------------------------------------------------
+# SECRETS THE FOUNDER MUST SET (gh secret set NAME --repo <owner>/<repo>):
+#
+#   Required (build fails without them):
+#     gh secret set GOOGLE_SERVICES_JSON        # full contents of apps/mobile/google-services.json (Firebase)
+#     gh secret set GOOGLE_MAPS_ANDROID_KEY     # native Google Maps SDK key (app.config.ts android.config.googleMaps)
+#     gh secret set EXPO_PUBLIC_API_URL         # VAIRA API base URL
+#     gh secret set EXPO_PUBLIC_SUPABASE_URL    # Supabase project URL
+#     gh secret set EXPO_PUBLIC_SUPABASE_ANON_KEY   # Supabase anon key
+#     gh secret set EXPO_PUBLIC_MIXPANEL_TOKEN  # Mixpanel project token
+#
+#   Optional (bring-your-own release keystore; if unset, the job generates an
+#   ephemeral keystore so the APK is signed and installable — but every run
+#   then uses a DIFFERENT signing identity, so a device must uninstall the
+#   previous build before installing a new one. Set all four to sign every
+#   build with one stable identity):
+#     gh secret set RELEASE_KEYSTORE_BASE64     # base64 of your .keystore/.jks  (base64 -w0 my.keystore)
+#     gh secret set RELEASE_KEYSTORE_PASSWORD   # keystore (store) password
+#     gh secret set RELEASE_KEY_ALIAS           # key alias inside the keystore
+#     gh secret set RELEASE_KEY_PASSWORD        # key password for that alias
+#
+# NOTE: EXPO_PUBLIC_GOOGLE_MAPS_KEY is deliberately NOT exported. The client
+# routes Places/Maps web calls through a server proxy and apps/mobile/src has a
+# guard test (journeyPlacesProxy.test.ts) asserting that key never reaches the
+# JS bundle. The native map tiles use GOOGLE_MAPS_ANDROID_KEY (above) instead.
+# ---------------------------------------------------------------------------
+
+on:
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: "Android ABI to build. x86_64 is for the Android emulator; only arm64-v8a is ever published to the served download."
+        type: choice
+        default: arm64-v8a
+        options:
+          - arm64-v8a
+          - x86_64
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # Needed so the main-branch publish step below can push the built APK back
+    # to the repo. Narrowest grant: read is the default, write only on contents.
+    permissions:
+      contents: write
+    env:
+      CI: 1
+      # EXPO_PUBLIC_* are inlined into the JS bundle by Metro during
+      # assembleRelease; GOOGLE_MAPS_ANDROID_KEY is read by app.config.ts at
+      # prebuild. Set at job level so both the prebuild and gradle steps see
+      # them. @expo/env's dotenv load does not override an existing process.env
+      # value, so these win over any local .env (which is gitignored anyway).
+      EXPO_PUBLIC_API_URL: ${{ secrets.EXPO_PUBLIC_API_URL }}
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      EXPO_PUBLIC_MIXPANEL_TOKEN: ${{ secrets.EXPO_PUBLIC_MIXPANEL_TOKEN }}
+      GOOGLE_MAPS_ANDROID_KEY: ${{ secrets.GOOGLE_MAPS_ANDROID_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Ubuntu runners ship with ~14 GB free on /, and a prior b15 run hit
+      # "No space left on device" ~3 min into assembleRelease. Drop large
+      # preinstalled toolchains this build never uses to reclaim ~25-30 GB
+      # before anything installs. Keep the Android SDK root (setup-android
+      # reinstalls what it needs); only the NDK is removed.
+      - name: Free runner disk space
+        run: |
+          echo "before:"; df -h /
+          sudo rm -rf /usr/local/lib/android/sdk/ndk || true
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup \
+                      /opt/hostedtoolcache/CodeQL /usr/share/swift || true
+          sudo docker image prune -af || true
+          echo "after:"; df -h /
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # s25 lane E2: setup-android@v3 defaults to installing the obsolete SDK
+      # `tools` package (removed from Google's repo) -> "Failed to find package
+      # 'tools'" (exit 1) before any build ran. ubuntu-latest already ships a
+      # complete Android SDK, so skip the sdkmanager install (packages: "") and
+      # use it. Minimal CI-only fix to unblock the mandated device-proof build.
+      # Fable to review (branch-only; workflow_dispatch reads this ref's file).
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: ""
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Write google-services.json from secret
+        run: printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" > apps/mobile/google-services.json
+
+      - name: Expo prebuild (android, clean)
+        run: npx expo prebuild --platform android --clean --no-install
+        working-directory: apps/mobile
+
+      # Raise the build-JVM heap/metaspace above the expo template default
+      # (2048m/512m) so R8/ProGuard + Metro bundling don't OOM. Appended after
+      # prebuild; the last org.gradle.jvmargs in gradle.properties wins.
+      - name: Bump Gradle JVM heap
+        working-directory: apps/mobile
+        run: printf '\norg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\n' >> android/gradle.properties
+
+      - name: Resolve release keystore (bring-your-own or generate ephemeral)
+        working-directory: apps/mobile/android/app
+        run: |
+          set -euo pipefail
+          if [ -n "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" ]; then
+            echo "Using founder-provided RELEASE_KEYSTORE_BASE64."
+            echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+            {
+              echo "VAIRA_RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}"
+              echo "VAIRA_RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}"
+              echo "VAIRA_RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}"
+            } >> "$GITHUB_ENV"
+          else
+            echo "No RELEASE_KEYSTORE_BASE64 secret; generating an ephemeral keystore for this run."
+            PW="$(openssl rand -hex 16)"
+            keytool -genkeypair -v \
+              -keystore release.keystore \
+              -alias vaira \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$PW" -keypass "$PW" \
+              -dname "CN=VAIRA CI, OU=Mobile, O=VAIRA, C=IN"
+            {
+              echo "VAIRA_RELEASE_STORE_PASSWORD=$PW"
+              echo "VAIRA_RELEASE_KEY_ALIAS=vaira"
+              echo "VAIRA_RELEASE_KEY_PASSWORD=$PW"
+            } >> "$GITHUB_ENV"
+          fi
+          echo "VAIRA_RELEASE_STORE_FILE=release.keystore" >> "$GITHUB_ENV"
+
+      - name: Patch release signingConfig into generated build.gradle
+        working-directory: apps/mobile
+        run: |
+          set -euo pipefail
+          perl -0777 -i -pe '
+            s/(signingConfigs \{\n\s*debug \{\n(?:.*\n)*?\s*\})/$1\n        release {\n            storeFile file(System.getenv("VAIRA_RELEASE_STORE_FILE") ?: "release.keystore")\n            storePassword System.getenv("VAIRA_RELEASE_STORE_PASSWORD")\n            keyAlias System.getenv("VAIRA_RELEASE_KEY_ALIAS")\n            keyPassword System.getenv("VAIRA_RELEASE_KEY_PASSWORD")\n        }/;
+            s{(// see https://reactnative\.dev/docs/signed-apk-android\.\n\s*signingConfig signingConfigs\.)debug}{${1}release};
+          ' android/app/build.gradle
+          echo "--- signingConfigs / release buildType after patch ---"
+          grep -n "signingConfig\|storeFile\|keyAlias" android/app/build.gradle
+          # Fail fast if the patch did not take (e.g. template changed shape).
+          grep -q "signingConfig signingConfigs.release" android/app/build.gradle
+
+      - name: Gradle assembleRelease (JS bundle embedded)
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=${{ github.event.inputs.arch }} --no-daemon --stacktrace --max-workers=2 2>&1 | tee gradle-build.log
+
+      - name: Tail gradle log
+        if: always()
+        run: tail -c 12000 apps/mobile/android/gradle-build.log || true
+
+      - name: APK size to job summary
+        if: always()
+        run: |
+          set -euo pipefail
+          APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          if [ -f "$APK" ]; then
+            BYTES=$(stat -c%s "$APK")
+            MB=$(awk "BEGIN{printf \"%.1f\", $BYTES/1048576}")
+            echo "### VAIRA release APK (arm64-v8a)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "- File: \`app-release.apk\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Size: **${MB} MB** (${BYTES} bytes)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "app-release.apk not found — build failed. See gradle-log artifact." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload gradle log
+        continue-on-error: true
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-log
+          path: apps/mobile/android/gradle-build.log
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Upload release APK
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ github.event.inputs.arch }}
+          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 7
+          if-no-files-found: error
+
+      # On main only: commit the freshly built APK into the API's public
+      # download folder so the served /download/vaira-mvp.apk tracks main.
+      # git diff --quiet skips the commit when the APK is byte-identical, so an
+      # unchanged build does not create an empty commit. [skip ci] keeps this
+      # push from retriggering the workflow. Uses the checkout token (default
+      # persist-credentials) to push back to the triggering branch.
+      - name: Publish APK to apps/api/public/download (main only)
+        if: github.ref == 'refs/heads/main' && github.event.inputs.arch == 'arm64-v8a'
+        run: |
+          set -euo pipefail
+          SRC=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          DEST=apps/api/public/download/vaira-mvp.apk
+          mkdir -p "$(dirname "$DEST")"
+          cp "$SRC" "$DEST"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$DEST"
+          if git diff --cached --quiet; then
+            echo "APK unchanged — nothing to commit."
+          else
+            git commit -m "ci: publish main-branch APK to apps/api/public/download [skip ci]"
+            git push
+          fi

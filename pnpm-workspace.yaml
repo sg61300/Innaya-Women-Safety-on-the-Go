@@ -1,0 +1,9 @@
+packages:
+  - "packages/*"
+  - "apps/*"
+
+nodeLinker: hoisted
+
+allowBuilds:
+  '@shopify/react-native-skia': true
+  sharp: true

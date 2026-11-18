@@ -1,0 +1,17 @@
+{
+  "classes": [
+    { "name": "Delhi placeholder academy 1", "lat": 28.6215, "lng": 77.2150, "partner": true, "discountPct": 10, "phone": "9876543201" },
+    { "name": "Delhi placeholder academy 2", "lat": 28.6045, "lng": 77.1998, "partner": false, "phone": "9876543202" },
+    { "name": "Ghaziabad placeholder academy 3", "lat": 28.6725, "lng": 77.4602, "partner": true, "discountPct": 15, "phone": "9876543203" },
+    { "name": "Ghaziabad placeholder academy 4", "lat": 28.6650, "lng": 77.4480, "partner": false, "phone": "9876543204" },
+    { "name": "Bengaluru placeholder academy 5", "lat": 12.9760, "lng": 77.6010, "partner": true, "discountPct": 10, "phone": "9876543205" },
+    { "name": "Bengaluru placeholder academy 6", "lat": 12.9660, "lng": 77.5885, "partner": false, "phone": "9876543206" }
+  ],
+  "tools": [
+    { "name": "Pepper spray", "legal": "legal", "amazonUrl": "https://www.amazon.in/s?k=pepper+spray+women" },
+    { "name": "Personal alarm", "legal": "legal", "amazonUrl": "https://www.amazon.in/s?k=personal+safety+alarm" },
+    { "name": "Baton", "legal": "legal", "amazonUrl": "https://www.amazon.in/s?k=self+defence+baton" },
+    { "name": "Whistle", "legal": "legal", "amazonUrl": "https://www.amazon.in/s?k=safety+whistle" },
+    { "name": "Taser", "legal": "restricted", "amazonUrl": "https://www.amazon.in/s?k=stun+gun", "note": "restricted in India — VERIFY local law" }
+  ]
+}

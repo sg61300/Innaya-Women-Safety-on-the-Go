@@ -1,0 +1,7 @@
+# T1: arm a monitored journey from a clean start. Runs the setup chain, then
+# plans + starts a journey (selfie two-tap, safe word) and asserts it is active.
+appId: com.vaira.app
+---
+- runFlow: onboarding.yaml
+- runFlow: journey.yaml
+- assertVisible: "JOURNEY ACTIVE · SAFE"

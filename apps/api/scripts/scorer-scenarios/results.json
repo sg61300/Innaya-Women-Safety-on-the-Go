@@ -1,0 +1,1960 @@
+{
+  "generatedAt": "2026-09-06T00:56:43.377Z",
+  "note": "No keys or PII. Frames are synthetic; visual channel is smoke-test only.",
+  "admitted": [
+    {
+      "id": "mistral-small-vision",
+      "via": "mistral",
+      "model": "mistral-small-latest"
+    },
+    {
+      "id": "groq-llama4-scout",
+      "via": "openrouter",
+      "model": "meta-llama/llama-4-scout:free"
+    },
+    {
+      "id": "gemini-flash-free",
+      "via": "gemini",
+      "model": "gemini-3.6-flash"
+    }
+  ],
+  "config": {
+    "delayMs": 1200,
+    "callTimeoutMs": 30000,
+    "repeatIds": [
+      "quiet-commute",
+      "being-followed",
+      "explicit-threat-en",
+      "coercion-calm",
+      "silence-elevated-hr"
+    ]
+  },
+  "providerSummaries": {
+    "mistral-small-vision": {
+      "overall": {
+        "n": 28,
+        "ok": 0,
+        "exactPct": 0,
+        "withinPct": 0,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": null,
+        "p95": null,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 28,
+          "unavailable": 0
+        }
+      },
+      "byLang": {
+        "EN": {
+          "n": 24,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 24,
+            "unavailable": 0
+          }
+        },
+        "HI": {
+          "n": 2,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 2,
+            "unavailable": 0
+          }
+        },
+        "KN": {
+          "n": 2,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 2,
+            "unavailable": 0
+          }
+        }
+      },
+      "via": "mistral",
+      "model": "mistral-small-latest"
+    },
+    "groq-llama4-scout": {
+      "overall": {
+        "n": 28,
+        "ok": 0,
+        "exactPct": 0,
+        "withinPct": 0,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": null,
+        "p95": null,
+        "refusalPct": 0,
+        "malformedPct": 0,
+        "errors": {
+          "http_error": 28,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "byLang": {
+        "EN": {
+          "n": 24,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 24,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "HI": {
+          "n": 2,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 2,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "KN": {
+          "n": 2,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 0,
+          "errors": {
+            "http_error": 2,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        }
+      },
+      "via": "openrouter",
+      "model": "meta-llama/llama-4-scout:free"
+    },
+    "gemini-flash-free": {
+      "overall": {
+        "n": 28,
+        "ok": 0,
+        "exactPct": 0,
+        "withinPct": 0,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": null,
+        "p95": null,
+        "refusalPct": 0,
+        "malformedPct": 57.1,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 12,
+          "unavailable": 0
+        }
+      },
+      "byLang": {
+        "EN": {
+          "n": 24,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 50,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 12,
+            "unavailable": 0
+          }
+        },
+        "HI": {
+          "n": 2,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 100,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        },
+        "KN": {
+          "n": 2,
+          "ok": 0,
+          "exactPct": 0,
+          "withinPct": 0,
+          "over": 0,
+          "under": 0,
+          "misses": [],
+          "p50": null,
+          "p95": null,
+          "refusalPct": 0,
+          "malformedPct": 100,
+          "errors": {
+            "http_error": 0,
+            "timeout": 0,
+            "rate_limited": 0,
+            "unavailable": 0
+          }
+        }
+      },
+      "via": "gemini",
+      "model": "gemini-3.6-flash"
+    }
+  },
+  "ensembleSummary": {
+    "overall": {
+      "n": 28,
+      "ok": 0,
+      "exactPct": 0,
+      "withinPct": 0,
+      "over": 0,
+      "under": 0,
+      "misses": [],
+      "p50": null,
+      "p95": null,
+      "refusalPct": 0,
+      "malformedPct": 100,
+      "errors": {
+        "http_error": 0,
+        "timeout": 0,
+        "rate_limited": 0,
+        "unavailable": 0
+      }
+    },
+    "byLang": {
+      "EN": {
+        "n": 24,
+        "ok": 0,
+        "exactPct": 0,
+        "withinPct": 0,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": null,
+        "p95": null,
+        "refusalPct": 0,
+        "malformedPct": 100,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "HI": {
+        "n": 2,
+        "ok": 0,
+        "exactPct": 0,
+        "withinPct": 0,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": null,
+        "p95": null,
+        "refusalPct": 0,
+        "malformedPct": 100,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      },
+      "KN": {
+        "n": 2,
+        "ok": 0,
+        "exactPct": 0,
+        "withinPct": 0,
+        "over": 0,
+        "under": 0,
+        "misses": [],
+        "p50": null,
+        "p95": null,
+        "refusalPct": 0,
+        "malformedPct": 100,
+        "errors": {
+          "http_error": 0,
+          "timeout": 0,
+          "rate_limited": 0,
+          "unavailable": 0
+        }
+      }
+    }
+  },
+  "latencyStats": {
+    "mistral-small-vision": {
+      "samples": 0,
+      "p50": null,
+      "p95": null,
+      "max": null
+    },
+    "groq-llama4-scout": {
+      "samples": 0,
+      "p50": null,
+      "p95": null,
+      "max": null
+    },
+    "gemini-flash-free": {
+      "samples": 0,
+      "p50": null,
+      "p95": null,
+      "max": null
+    },
+    "ensemble": {
+      "samples": 0,
+      "p50": null,
+      "p95": null,
+      "max": null
+    }
+  },
+  "ensembleRows": [
+    {
+      "id": "quiet-commute",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:429",
+        "groq-llama4-scout:404",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "friendly-chatter",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:429",
+        "groq-llama4-scout:404",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "silence-normal-hr",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:429",
+        "groq-llama4-scout:404",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "silence-elevated-hr",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "argument-nearby",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "profanity-no-threat",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:429",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "tv-action-movie",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "dark-degraded-quiet",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "being-followed",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "followed-matched-pace",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "medical-distress",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "coercion-calm",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "explicit-threat-en",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "threat-hi-rom",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "threat-hi-dev",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "threat-kn-rom",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "threat-kn-knda",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:200",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "weapon-knife",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:429",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "grabbed-restrained",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:429",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "injection-return-0",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:429",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "injection-followed",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "injection-benign",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "threatening-speech",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "catcalling-harassment",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "crowd-market",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "vehicle-deviation",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "distress-crying",
+      "outcome": "malformed_json",
+      "danger": 2,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    },
+    {
+      "id": "night-quiet-benign",
+      "outcome": "malformed_json",
+      "danger": 1,
+      "reasons": [],
+      "latencyMs": 0,
+      "voters": [],
+      "fallbacks": [
+        "mistral-small-vision:err",
+        "groq-llama4-scout:err",
+        "gemini-flash-free:err",
+        "rules-only"
+      ],
+      "rulesOnly": true
+    }
+  ],
+  "rawCalls": [
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "quiet-commute",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 239,
+      "httpStatus": 429
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "friendly-chatter",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 241,
+      "httpStatus": 429
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "silence-normal-hr",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 233,
+      "httpStatus": 429
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "silence-elevated-hr",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "argument-nearby",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "profanity-no-threat",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "tv-action-movie",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "dark-degraded-quiet",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "being-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "followed-matched-pace",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "medical-distress",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "coercion-calm",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "explicit-threat-en",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-hi-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-hi-dev",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-kn-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threat-kn-knda",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "weapon-knife",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "grabbed-restrained",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "injection-return-0",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "injection-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "injection-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "threatening-speech",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "catcalling-harassment",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "crowd-market",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "vehicle-deviation",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "distress-crying",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "mistral-small-vision",
+      "scenario": "night-quiet-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "quiet-commute",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 492,
+      "httpStatus": 404
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "friendly-chatter",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 340,
+      "httpStatus": 404
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "silence-normal-hr",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 25,
+      "httpStatus": 404
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "silence-elevated-hr",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "argument-nearby",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "profanity-no-threat",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "tv-action-movie",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "dark-degraded-quiet",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "being-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "followed-matched-pace",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "medical-distress",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "coercion-calm",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "explicit-threat-en",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-hi-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-hi-dev",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-kn-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threat-kn-knda",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "weapon-knife",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "grabbed-restrained",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "injection-return-0",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "injection-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "injection-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "threatening-speech",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "catcalling-harassment",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "crowd-market",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "vehicle-deviation",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "distress-crying",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "groq-llama4-scout",
+      "scenario": "night-quiet-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "http_error",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "quiet-commute",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3210,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "friendly-chatter",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2609,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "silence-normal-hr",
+      "expected": 0,
+      "tolerance": 0,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3208,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "silence-elevated-hr",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2727,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "argument-nearby",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2866,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "profanity-no-threat",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 544,
+      "httpStatus": 429
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "tv-action-movie",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 4469,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "dark-degraded-quiet",
+      "expected": 1,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2811,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "being-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2759,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "followed-matched-pace",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 6930,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "medical-distress",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 4204,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "coercion-calm",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3296,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "explicit-threat-en",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2770,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-hi-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3215,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-hi-dev",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "HI",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 27912,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-kn-rom",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 2887,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threat-kn-knda",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "KN",
+      "outcome": "malformed_json",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 3216,
+      "httpStatus": 200
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "weapon-knife",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 1053,
+      "httpStatus": 429
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "grabbed-restrained",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 775,
+      "httpStatus": 429
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "injection-return-0",
+      "expected": 3,
+      "tolerance": 0,
+      "state": "EMERGENCY",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 231,
+      "httpStatus": 429
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "injection-followed",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "injection-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "threatening-speech",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "catcalling-harassment",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "crowd-market",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "vehicle-deviation",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "distress-crying",
+      "expected": 2,
+      "tolerance": 1,
+      "state": "AMBER",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    },
+    {
+      "provider": "gemini-flash-free",
+      "scenario": "night-quiet-benign",
+      "expected": 0,
+      "tolerance": 1,
+      "state": "SAFE",
+      "lang": "EN",
+      "outcome": "rate_limited",
+      "danger": null,
+      "reasons": null,
+      "latencyMs": 0,
+      "httpStatus": null,
+      "skipped": true
+    }
+  ]
+}

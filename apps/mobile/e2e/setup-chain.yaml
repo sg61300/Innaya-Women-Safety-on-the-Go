@@ -1,0 +1,10 @@
+# T1: the full first-run setup chain as one named flow:
+# language -> auth (OTP stub) -> permissions -> profile -> words -> consent ->
+# training -> home. onboarding.yaml already encodes this exact chain against the
+# current testIDs, so run it and assert the home landing. (Clean state has no
+# account, so the chain uses the signup+OTP-stub path; a pure re-login variant
+# needs a seeded account and is validated in the emulator phase.)
+appId: com.vaira.app
+---
+- runFlow: onboarding.yaml
+- assertVisible: { id: "sos" }

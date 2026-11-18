@@ -1,0 +1,36 @@
+appId: com.vaira.app
+env:
+  EMAIL: e2e+${TS}@vaira.test
+---
+- launchApp: { clearState: true }
+- extendedWaitUntil: { visible: { text: "English" }, timeout: 10000 }
+- tapOn: "English"
+- tapOn: "Sign up"
+- inputText: { id: "signup-email", text: "${EMAIL}" }
+- inputText: { id: "signup-phone", text: "9876543210" }
+- inputText: { id: "signup-password", text: "Passw0rd!" }
+- inputText: { id: "signup-confirm", text: "Passw0rd!" }
+- tapOn: { id: "signup-submit" }
+- inputText: { id: "otp-input", text: "000000" }
+- repeat: { times: 5, commands: [ { tapOn: { id: "perm-later" } } ] }
+- inputText: { id: "profile-name", text: "Priya Test" }
+- inputText: { id: "profile-age", text: "28" }
+- tapOn: { id: "contact-add-manual" }
+- inputText: { id: "contact-name-0", text: "Amma" }
+- inputText: { id: "contact-phone-0", text: "9876500000" }
+- tapOn: { id: "profile-save" }
+- tapOn: { id: "survey-skip" }
+- inputText: { id: "emergency-word-0", text: "blue mango tree" }
+- inputText: { id: "police-keyword", text: "yellow kite" }
+- inputText: { id: "emergency-password", text: "second-secret-9" }
+- tapOn: { id: "words-save" }
+- scrollUntilVisible: { element: { id: "consent-check" }, direction: DOWN }
+- tapOn: { id: "consent-check" }
+- tapOn: { id: "consent-agree" }
+- tapOn: { id: "training-continue" }
+- extendedWaitUntil: { visible: { id: "guardian-ring" }, timeout: 15000 }
+- assertVisible: "STANDBY"
+- assertVisible: { text: "1/12" }
+- repeat: { times: 11, commands: [ { tapOn: "Next →" } ] }
+- tapOn: "Done ✓"
+- assertVisible: { id: "sos" }

@@ -1,0 +1,22 @@
+node_modules
+.env
+.env.*
+!.env.example
+*.log
+dist
+.expo
+android/
+ios/
+apps/mobile/google-services.json
+Design-fixtures/
+e2e-report.xml
+
+.vercel
+
+# lane evidence and reports belong in the vault, not the repo
+**/s*-evidence/
+**/s*-lane-*-report.md
+
+# internal workflow dir (kept local, never public)
+.superpowers/
+*.apk

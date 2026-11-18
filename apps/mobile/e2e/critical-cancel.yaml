@@ -1,0 +1,32 @@
+# T1: leave CRITICAL via the double-password gate (ADR-014). Arms a journey, holds
+# SOS to drive CRITICAL, then enters the app password + the emergency password.
+# Password path uses the credentials onboarding.yaml set (app "Passw0rd!",
+# emergency "second-secret-9").
+#
+# NOTE (emulator phase): the CANCEL_HOLD landing assertion and the no-password
+# path below are drafts to confirm/adjust on the device against the b7 defect list
+# (E1...). The no-password path needs an account created WITHOUT an emergency
+# password (onboarding.yaml always sets one), so it is left commented until a
+# no-password setup variant exists.
+appId: com.vaira.app
+---
+- runFlow: onboarding.yaml
+- runFlow: journey.yaml
+- longPressOn: { id: "sos" }
+- assertVisible: "Help is being called."
+# Open the CRITICAL cancel flow (app-password step), then the emergency-password step.
+- tapOn: { id: "emergency-cancel" }
+- inputText: { id: "overlay-pw-app", text: "Passw0rd!" }
+- tapOn: { id: "overlay-submit" }
+- inputText: { id: "overlay-pw-emergency", text: "second-secret-9" }
+- tapOn: { id: "overlay-submit" }
+# CANCEL_HOLD: siren holds while guardians are called. Confirm the exact landing
+# UI on the emulator (cancel-hold-sheet / status copy) and tighten this assert.
+- assertVisible: { id: "cancel-hold-sheet" }
+
+# --- no-password path (finalize on emulator; needs a no-emergency-password account) ---
+# - tapOn: { id: "emergency-cancel" }
+# - inputText: { id: "overlay-pw-app", text: "Passw0rd!" }
+# - tapOn: { id: "overlay-submit" }
+# - assertVisible: { id: "overlay-no-password" }
+# - tapOn: { id: "overlay-call-guardian" }
