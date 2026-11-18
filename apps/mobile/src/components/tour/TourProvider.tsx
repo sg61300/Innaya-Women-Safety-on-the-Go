@@ -89,7 +89,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     const toRoute = TOUR_STEPS[clamped].route;
     // navigate (not push): reuses a route already in the stack instead of
     // stacking a new screen each step, so Back after "Done" returns to the
-    // pre-tour screen rather than unwinding all 12 steps (B2).
+    // pre-tour screen rather than unwinding all 11 steps (B2).
     if (toRoute !== fromRoute) router.navigate(toRoute as never);
     indexRef.current = clamped;
     scrolledFor.current = -1;

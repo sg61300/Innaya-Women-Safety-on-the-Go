@@ -1,4 +1,4 @@
-// The 12 spotlight-tour steps in walk order across five screens. Copy lives in
+// The 11 spotlight-tour steps in walk order across four screens. Copy lives in
 // i18n (en.json `tour.<id>.tag|title|body`); each step names a target id that a
 // <TourTarget id="…"> on the owning screen registers so the overlay can measure
 // it. Order and emoji/tag/tip reproduce the prototype (Design/02 §4.3).
@@ -6,8 +6,7 @@ export type TourRoute =
   | "/(user)/home"
   | "/(user)/regions"
   | "/(user)/journey/new"
-  | "/(user)/simulate"
-  | "/(user)/profile";
+  | "/(user)/simulate";
 
 export type TourStep = {
   id: string;
@@ -43,5 +42,7 @@ export const TOUR_STEPS: TourStep[] = [
   step("cityGps", "/(user)/journey/new", "📡", "below"),
   step("safeWord", "/(user)/journey/new", "🔑", "above"),
   step("simulate", "/(user)/simulate", "🎯", "below"),
-  step("guardians", "/(user)/profile", "👥", "below"),
+  // No Guardians step: the guardian side gets its own separate intro (founder
+  // 2026-11-17 "guardians app can have their own separate intro."). The tour.guardians
+  // copy stays in i18n for that intro.
 ];

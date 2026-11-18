@@ -49,7 +49,7 @@
     "ring": {
       "tag": "Safety Status",
       "title": "Your INNAYA Ring",
-      "body": "This living ring shows your real-time safety status. Violet = standby, green = safe on a journey, amber = being checked in on, red = emergency active. Three of your guardians are always watching."
+      "body": "The ring shows your safety status."
     },
     "quickActions": {
       "tag": "Quick Actions",
@@ -94,12 +94,12 @@
     "safeWord": {
       "tag": "Safe Word",
       "title": "Your Secret Safe Word",
-      "body": "Pick a word only you would naturally say. Not \"okay\" or \"fine\". Say it aloud or type it during any check-in to confirm you're safe. If you don't respond, an alert fires automatically."
+      "body": "A secret word proves you're safe at a check-in."
     },
     "simulate": {
       "tag": "Practice Mode",
       "title": "Simulation & Drills",
-      "body": "Run a safety drill to test the full alert chain, start a fake live stream that looks real on social media, or send a test WhatsApp check-in. Practice keeps you ready when it actually matters."
+      "body": "Practice your safety tools here."
     },
     "guardians": {
       "tag": "Your Guardians",
