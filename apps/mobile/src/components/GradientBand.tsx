@@ -4,7 +4,7 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { useTheme, type Palette } from "../theme";
 import { darkenUntil } from "../theme/color";
 
-// VAIRA v2 header band (founder b14 / products-site reference: plum-to-black
+// INNAYA v2 header band (founder b14 / products-site reference: plum-to-black
 // gradients with rose-gold accents). A token-driven diagonal gradient painted
 // with react-native-svg (already a dependency; no new native module). Children
 // render above the gradient. Colours come from the palette brand ramp.

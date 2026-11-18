@@ -13,7 +13,7 @@ jest.mock("@react-native-community/datetimepicker", () => {
   return { __esModule: true, default: (p: Record<string, any>) => { mockPickerProps = p; return React2.createElement(View, { testID: p.testID }); } };
 });
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }), useNavigation: () => ({ addListener: () => () => {}, dispatch: jest.fn() }) }));
 jest.mock("expo-camera", () => {
   const React2 = require("react");
   const { View } = require("react-native");

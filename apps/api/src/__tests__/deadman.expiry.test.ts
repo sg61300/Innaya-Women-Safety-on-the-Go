@@ -4,7 +4,7 @@
 jest.mock("@/lib/journeyState", () => ({ applyEvent: jest.fn().mockResolvedValue({ state: "CRITICAL", actions: [] }) }));
 jest.mock("@/lib/monitoring", () => ({
   ALARM_EXPIRY_MS: 15 * 60_000,
-  expireSilentAlarm: jest.fn().mockResolvedValue(undefined),
+  expireSilentAlarm: jest.fn().mockResolvedValue(true),
   maybeBatteryPush: jest.fn().mockResolvedValue(0),
 }));
 

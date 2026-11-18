@@ -15,6 +15,7 @@ import { supabase } from "../../../src/lib/supabase";
 import { links } from "../../../src/lib/links";
 import i18n from "../../../src/i18n";
 
+const END_CHECK_MS = 15_000;
 const HEARTBEAT_MS = 30_000;
 
 // danger_score (0-3) → guardian-facing gauge label + chip kind.
@@ -45,6 +46,41 @@ export default function MonitorScreen() {
   const [expiredSince, setExpiredSince] = useState<string | null>(null);
   const [battery, setBattery] = useState<number | null>(null);
   const beat = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Fix lane D7 item 9 (founder Q125): the end action after her emergency word, as on the web
+  // page: open (two steps), closed (greyed, 4+ guardians outside this guardian's group window)
+  // or not shown. The server decides; checked on open, on each state change, and every 15 s
+  // while the alarm is CRITICAL, because the group window moves with time.
+  const [endMode, setEndMode] = useState<"none" | "open" | "closed">("none");
+  const [endAsk, setEndAsk] = useState(false);
+  const [endMsg, setEndMsg] = useState<string | null>(null);
+  const [endCheckN, setEndCheckN] = useState(0);
+  useEffect(() => {
+    if (!journeyId) return;
+    let gone = false;
+    const check = async () => {
+      try {
+        const r = await guardian.endStatus(journeyId);
+        if (!gone) setEndMode(r?.end === "open" || r?.end === "closed" ? r.end : "none");
+      } catch (e) {
+        console.warn("[monitor] end status failed", String((e as Error)?.message ?? e)); // keeps what it shows; next check retries
+      }
+    };
+    void check();
+    const t = state === "CRITICAL" ? setInterval(check, END_CHECK_MS) : null;
+    return () => { gone = true; if (t) clearInterval(t); };
+  }, [journeyId, state, endCheckN]);
+  const endAlarm = async () => {
+    setEndAsk(false);
+    try {
+      await guardian.endAlarm(journeyId);
+      setEndMode("none");
+      setEndMsg(i18n.t("guardian.monitor.endDone"));
+    } catch (e) {
+      console.warn("[monitor] end alarm refused or failed", String((e as Error)?.message ?? e));
+      setEndMsg(i18n.t("guardian.monitor.endFailed"));
+      setEndCheckN((n) => n + 1);
+    }
+  };
 
   useEffect(() => {
     if (!journeyId) return;
@@ -102,10 +138,39 @@ export default function MonitorScreen() {
   return (
     <Screen scroll padded topInset={false} testID="monitor-screen">
       <View style={{ gap: 14, paddingTop: 8, paddingBottom: 40 }}>
+        {/* Phase 3: plain title row; the sole back control is the top-bar one.
+            Designer fix: the name gets flexShrink:1 so a long owner name wraps
+            and the StatusChip stays on-screen on the same row. */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Text variant="title" color="primary">{name}</Text>
+          <Text variant="title" color="primary" accessibilityRole="header" style={{ flexShrink: 1 }}>{name}</Text>
           <StatusChip state={state as any} />
         </View>
+
+        {endMode === "open" ? (
+          <Card testID="monitor-end" style={{ gap: 10 }}>
+            {endAsk ? (
+              <>
+                <Text variant="bodyStrong" color="primary">{i18n.t("guardian.monitor.endQuestion")}</Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <Button3D testID="monitor-end-confirm" full label={i18n.t("guardian.monitor.endConfirm")} onPress={() => void endAlarm()} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Button3D testID="monitor-end-back" full variant="ghost" label={i18n.t("guardian.monitor.endBack")} onPress={() => setEndAsk(false)} />
+                  </View>
+                </View>
+              </>
+            ) : (
+              <Button3D testID="monitor-end-start" full label={i18n.t("guardian.monitor.endStart")} onPress={() => { setEndMsg(null); setEndAsk(true); }} />
+            )}
+          </Card>
+        ) : endMode === "closed" ? (
+          <Card testID="monitor-end" style={{ gap: 8 }}>
+            <Button3D testID="monitor-end-closed" full disabled label={i18n.t("guardian.monitor.endStart")} onPress={() => {}} />
+            <Text variant="caption" color="muted">{i18n.t("guardian.monitor.endClosed")}</Text>
+          </Card>
+        ) : null}
+        {endMsg ? <Text testID="monitor-end-msg" variant="bodyStrong" color="primary">{endMsg}</Text> : null}
 
         <Card style={{ padding: 0, overflow: "hidden", height: 240 }}>
           <MapView

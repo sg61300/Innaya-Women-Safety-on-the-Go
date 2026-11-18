@@ -38,7 +38,7 @@ export function cancelVerdict(votes: { safe: boolean }[], totalAsked: number): "
   if (anySafe) return "cancel";
   // Generalise the 3-guardian rule faithfully: when every asked guardian has
   // voted and none said Safe, the cancel is refused (keep). Fewer than all asked
-  // (or nobody asked yet) stays pending until the rest answer or the 30 s timeout.
+  // (or nobody asked yet) stays pending until the rest answer.
   if (totalAsked > 0 && votes.length >= totalAsked) return "keep";
   return "pending";
 }
@@ -158,12 +158,27 @@ function step(ctx: ProtocolContext, ev: ProtocolEvent): TransitionResult {
         // ADR-043 steps 1-2: app password / journey word are verified on the
         // wearer's phone and only logged server-side; they never move the alarm.
         case "CANCEL_STEP1_OK": case "CANCEL_STEP2_OK": return stay(ctx, `cancel ${ev.type === "CANCEL_STEP1_OK" ? "step 1" : "step 2"} ok`);
-        // ADR-043 step 3/4: the guardian cancel request opens. The siren is only
-        // held (not off) while the 30 s window is open, and only in siren mode.
+        // Fix AD round 2 (founder Q95, Q101): the correct word keeps the alarm CRITICAL,
+        // holds the siren and fires no new fan-out; only a guardian answer moves it.
         case "CANCEL_REQUESTED":
-          return to("CANCEL_HOLD", `cancel request opened (${ev.method})`, ctx.alarmMode === "siren" ? ["NOTIFY_GUARDIANS_CANCEL_REQUEST", "SIREN_HOLD"] : ["NOTIFY_GUARDIANS_CANCEL_REQUEST"], keep);
+          if (ctx.cancelWaiting) return stay(ctx, "cancel request already open");
+          return { ctx: { ...ctx, cancelWaiting: true }, actions: ctx.alarmMode === "siren" ? ["NOTIFY_GUARDIANS_CANCEL_REQUEST", "SIREN_HOLD"] : ["NOTIFY_GUARDIANS_CANCEL_REQUEST"], reason: `cancel request opened (${ev.method})` };
+        case "GUARDIAN_VOTE":
+          if (!ctx.cancelWaiting) return stay(ctx, "critical holds");
+          return ev.safe
+            ? to("RESOLVED_MONITORING", "guardian approved cancel", ["HEIGHTENED_MODE", "NOTIFY_GUARDIANS_CANCELLED_BY"], { ...keep, heightened: true })
+            : stay(ctx, "guardian voted not safe (request still open)");
+        // Founder Q116: emergency word while waiting. The request ends and guardians are told
+        // again; siren and alarm screen stay off (quietAlarm). Only her own SOS brings them back.
+        case "KEYWORD":
+          if (!ctx.cancelWaiting) return stay(ctx, "critical holds");
+          return { ctx: { ...ctx, cancelWaiting: false, quietAlarm: true }, actions: ["NOTIFY_ALL_CRITICAL"], reason: `keyword ${ev.kind} while waiting` };
+        // Keep verdict (2+ Not safe): today's rules, siren and alarm screen return.
+        case "GUARDIAN_SAYS_WRONG":
+          return ctx.cancelWaiting ? to("CRITICAL", "guardians kept the alarm on", [], keep) : stay(ctx, "critical holds");
         default: return stay(ctx, "critical holds");
       }
+    // Only journeys already held when Fix AD round 2 ships can still be here.
     case "CANCEL_HOLD":
       switch (ev.type) {
         // ADR-043 step 7: the first "Safe" cancels → heightened RESOLVED_MONITORING.
@@ -172,8 +187,6 @@ function step(ctx: ProtocolContext, ev: ProtocolEvent): TransitionResult {
           : stay(ctx, "guardian voted not safe (request still open)");
         // Majority said keep (2+ "Not safe") → the alarm stays on.
         case "GUARDIAN_SAYS_WRONG": return to("CRITICAL", "guardians kept the alarm on", [], keep);
-        // 30 s with no answer: siren mode starts/keeps the siren (stripped in silent); request stays open.
-        case "CANCEL_TIMEOUT": return stay(ctx, "no guardian answer in 30 s", ["SIREN_ON"]);
         default: return stay(ctx, "cancel request open");
       }
   }

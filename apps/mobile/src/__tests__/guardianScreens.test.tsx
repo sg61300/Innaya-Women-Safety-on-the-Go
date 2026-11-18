@@ -54,6 +54,8 @@ const mockRespond = jest.fn();
 const mockHeartbeat = jest.fn();
 const mockCheckOnHer = jest.fn();
 const mockRaiseSos = jest.fn();
+const mockEndStatus = jest.fn().mockResolvedValue({ end: "none" });
+const mockEndAlarm = jest.fn();
 jest.mock("../services/guardian", () => ({
   ...jest.requireActual("../services/guardian"),
   guardian: {
@@ -62,6 +64,8 @@ jest.mock("../services/guardian", () => ({
     heartbeat: (...a: unknown[]) => mockHeartbeat(...a),
     checkOnHer: (...a: unknown[]) => mockCheckOnHer(...a),
     raiseSos: (...a: unknown[]) => mockRaiseSos(...a),
+    endStatus: (...a: unknown[]) => mockEndStatus(...a),
+    endAlarm: (...a: unknown[]) => mockEndAlarm(...a),
   },
 }));
 
@@ -304,4 +308,64 @@ test("monitor: R47d shows the battery level, low style at ≤ 20 %", async () =>
     await mockChannelHandlers["heartbeats"]?.({ new: { battery: 0.18 } });
   });
   expect(getByTestId("monitor-battery")).toBeTruthy();
+});
+
+// ---- Fix lane D7 item 9 (founder Q125): the in-app end action, same rules as the web page ----
+describe("monitor: guardian end action after her emergency word", () => {
+  const START = "I have spoken to her. End the alarm";
+  const QUESTION = "Only do this after speaking with her yourself. End the alarm?";
+  const CLOSED = "You can't end the alarm right now. Another group of her guardians has been asked.";
+  beforeEach(() => { mockSearchParams = { journeyId: "j1", name: "Asha" }; });
+
+  test("not shown when the server says none (no emergency word, alarm over, not her guardian)", async () => {
+    mockEndStatus.mockResolvedValue({ end: "none" });
+    const { queryByTestId, queryByText } = await mount(<Monitor />);
+    expect(mockEndStatus).toHaveBeenCalledWith("j1");
+    expect(queryByTestId("monitor-end-start")).toBeNull();
+    expect(queryByText(START)).toBeNull();
+  });
+
+  test("not shown when the status check fails", async () => {
+    mockEndStatus.mockRejectedValue(new Error("offline"));
+    const { queryByTestId } = await mount(<Monitor />);
+    expect(queryByTestId("monitor-end-start")).toBeNull();
+  });
+
+  test("two steps: the first only asks; Go back ends nothing; End calls the server once", async () => {
+    mockEndStatus.mockResolvedValue({ end: "open" });
+    mockEndAlarm.mockResolvedValue({ result: "ended" });
+    const { getByTestId, getByText, queryByText } = await mount(<Monitor />);
+    expect(getByText(START)).toBeTruthy();
+    await press(getByTestId("monitor-end-start"));
+    expect(getByText(QUESTION)).toBeTruthy();
+    expect(mockEndAlarm).not.toHaveBeenCalled();
+    await press(getByTestId("monitor-end-back"));
+    expect(queryByText(QUESTION)).toBeNull();
+    expect(mockEndAlarm).not.toHaveBeenCalled();
+    await press(getByTestId("monitor-end-start"));
+    await press(getByTestId("monitor-end-confirm"));
+    expect(mockEndAlarm).toHaveBeenCalledTimes(1);
+    expect(mockEndAlarm).toHaveBeenCalledWith("j1");
+    expect(getByText("Thank you. The alarm has ended. Her journey is still being watched.")).toBeTruthy();
+  });
+
+  test("outside her group's window: greyed with the short line, cannot be started", async () => {
+    mockEndStatus.mockResolvedValue({ end: "closed" });
+    const { getByTestId, getByText, queryByText } = await mount(<Monitor />);
+    expect(getByText(CLOSED)).toBeTruthy();
+    expect(getByTestId("monitor-end-closed").props.accessibilityState).toMatchObject({ disabled: true });
+    await press(getByTestId("monitor-end-closed"));
+    expect(queryByText(QUESTION)).toBeNull();
+    expect(mockEndAlarm).not.toHaveBeenCalled();
+  });
+
+  test("refused by the server (window closed meanwhile): says nothing changed and checks again", async () => {
+    mockEndStatus.mockResolvedValueOnce({ end: "open" }).mockResolvedValue({ end: "closed" });
+    mockEndAlarm.mockRejectedValue(new Error("/api/guardian-end 410"));
+    const { getByTestId, getByText } = await mount(<Monitor />);
+    await press(getByTestId("monitor-end-start"));
+    await press(getByTestId("monitor-end-confirm"));
+    expect(getByText("This alarm cannot be ended here. Nothing was changed.")).toBeTruthy();
+    await waitFor(() => expect(getByText(CLOSED)).toBeTruthy());
+  });
 });

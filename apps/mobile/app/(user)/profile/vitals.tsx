@@ -1,5 +1,5 @@
 import { Screen } from "../../../src/components/Screen";
-import { ProfileBack } from "../../../src/components/ProfileChrome";
+import { Text } from "../../../src/components/Text";
 import { VitalsTab } from "../../../src/components/VitalsTab";
 import i18n from "../../../src/i18n";
 
@@ -7,7 +7,7 @@ import i18n from "../../../src/i18n";
 export default function VitalsScreen() {
   return (
     <Screen scroll padded topInset={false} testID="profile-screen">
-      <ProfileBack title={i18n.t("profile.tabVitals")} />
+      <Text variant="title" accessibilityRole="header">{i18n.t("profile.tabVitals")}</Text>
       <VitalsTab />
     </Screen>
   );

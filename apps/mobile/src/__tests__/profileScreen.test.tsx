@@ -14,10 +14,14 @@ const mockListenOnce = jest.fn();
 jest.mock("../services/stt", () => ({ stt: { listenOnce: (...a: unknown[]) => mockListenOnce(...a) } }));
 
 const mockGetUser = jest.fn().mockResolvedValue({ data: { user: { id: "u1" } } });
+const mockOwnPhone = jest.fn().mockResolvedValue({ data: { phone: "9000000001" }, error: null });
 jest.mock("../lib/supabase", () => ({
   supabase: {
     auth: { getUser: () => mockGetUser() },
-    from: () => ({ update: () => ({ eq: jest.fn().mockResolvedValue({ error: null }) }) }),
+    from: () => ({
+      update: () => ({ eq: jest.fn().mockResolvedValue({ error: null }) }),
+      select: () => ({ eq: () => ({ maybeSingle: () => mockOwnPhone() }) }),
+    }),
     storage: { from: () => ({ upload: jest.fn().mockResolvedValue({ error: null }) }) },
   },
 }));
@@ -94,6 +98,43 @@ describe("profile screen", () => {
       expect.objectContaining({ name: "Priya Test", age: 28, occupation: "Student", contacts: [expect.objectContaining({ phone: "9876500000", tier: "primary" })] })
     );
     expect(mockReplace).toHaveBeenCalledWith("/(setup)/safety-words");
+  });
+
+  // Owner 2026-11-11: "Do not allow self number to be saved as guardian number."
+  it("her own number as a guardian is refused with a message and nothing is saved", async () => {
+    mockSaveProfile.mockClear(); mockReplace.mockClear();
+    const { getByTestId, getByText } = await renderIn();
+    await act(async () => {});
+    await type(getByTestId, "profile-name", "Priya Test");
+    await type(getByTestId, "profile-age", "28");
+    await press(getByTestId, "profile-occupation-Student");
+    await press(getByTestId, "contact-add-manual");
+    await type(getByTestId, "contact-name-0", "Me");
+    await type(getByTestId, "contact-phone-0", "9000000001");
+    await press(getByTestId, "profile-save");
+    expect(getByText("You cannot add your own number as a guardian.")).toBeTruthy();
+    expect(mockSaveProfile).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  // Owner 2026-11-12: "Block own email too".
+  it("her own email as a guardian's email is refused, in any letter case", async () => {
+    mockSaveProfile.mockClear(); mockReplace.mockClear();
+    const own = ["her", "own.test"].join("@"); // built at run time: no address is written in git
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: "u1", email: own } } });
+    const { getByTestId, getByText } = await renderIn();
+    await act(async () => {});
+    await type(getByTestId, "profile-name", "Priya Test");
+    await type(getByTestId, "profile-age", "28");
+    await press(getByTestId, "profile-occupation-Student");
+    await press(getByTestId, "contact-add-manual");
+    await type(getByTestId, "contact-name-0", "Amma");
+    await type(getByTestId, "contact-phone-0", "9876500000");
+    expect(getByTestId("contact-email-0")).toBeTruthy();
+    await type(getByTestId, "contact-email-0", own.toUpperCase());
+    await press(getByTestId, "profile-save");
+    expect(mockSaveProfile).not.toHaveBeenCalled();
+    expect(getByText("You cannot add your own email as a guardian's email.")).toBeTruthy();
   });
 
   it("voice fill requests permission then writes the transcript into the empty name field", async () => {

@@ -3,7 +3,6 @@ import { View, Pressable } from "react-native";
 import { Screen } from "../../../src/components/Screen";
 import { Text } from "../../../src/components/Text";
 import { Card } from "../../../src/components/Card";
-import { ProfileBack } from "../../../src/components/ProfileChrome";
 import { useTheme } from "../../../src/theme";
 import { supabase } from "../../../src/lib/supabase";
 import i18n, { LANGS, setLanguage, type Lang } from "../../../src/i18n";
@@ -30,7 +29,7 @@ export default function LanguageScreen() {
 
   return (
     <Screen scroll padded topInset={false} testID="profile-screen">
-      <ProfileBack title={i18n.t("profile.language")} />
+      <Text variant="title" accessibilityRole="header">{i18n.t("profile.language")}</Text>
       <Card style={{ gap: 4 }}>
         {LANGS.map((l) => {
           const on = i18n.language === l.code;

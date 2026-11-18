@@ -17,17 +17,17 @@ jest.mock("react-native-maps", () => {
 
 jest.mock("expo-location", () => ({ getCurrentPositionAsync: jest.fn().mockResolvedValue({ coords: { latitude: 28.6, longitude: 77.2 } }) }));
 
-// Capture the props the hero ring receives so D7 can prove reduceMotion tracks
-// the live OS setting instead of being hard-coded static.
-let mockRingProps: Record<string, unknown> = {};
-jest.mock("../components/GuardianRing", () => {
+// Home now renders the StatusMedallion glow and the route-progress late stripes with
+// Skia, which has no jsdom backing — stub its nodes as pass-through Views (the same
+// pattern SplashSequence.test uses). We assert the Home ids/behaviour, not the GPU draw.
+jest.mock("@shopify/react-native-skia", () => {
   const React2 = require("react");
   const { View } = require("react-native");
+  const Node = (p: Record<string, unknown>) => React2.createElement(View, null, (p.children as never) ?? null);
   return {
-    GuardianRing: (p: Record<string, unknown>) => { mockRingProps = p; return React2.createElement(View, { testID: "guardian-ring" }); },
-    // JourneyCard imports the shared label from this module (F3); stub it so the
-    // active-journey card still renders under the mocked ring.
-    guardiansLabel: (n: number) => `${n} guardians`,
+    Canvas: Node, Group: Node, Circle: Node, Rect: Node, Fill: Node,
+    RadialGradient: Node, LinearGradient: Node, Blur: Node,
+    vec: (x: number, y: number) => ({ x, y }),
   };
 });
 
@@ -93,7 +93,6 @@ describe("dashboard — idle", () => {
     const { getByTestId } = await renderHome();
     await act(async () => {});
     getByTestId("home-scroll");
-    getByTestId("guardian-ring");
     getByTestId("home-help");
     getByTestId("quick-call");
     getByTestId("quick-video");
@@ -287,23 +286,6 @@ describe("first-run auto-tour starts once and never bounces (F1)", () => {
       jest.clearAllTimers();
       jest.useRealTimers();
     }
-  });
-});
-
-// D7: the hero ring must read the live reduce-motion setting, not a hard-coded flag.
-describe("hero ring honours the live reduce-motion setting (D7)", () => {
-  it("passes reduceMotion=true when the OS reports reduce motion ON (jest default)", async () => {
-    await renderHome();
-    await act(async () => {});
-    expect(mockRingProps.reduceMotion).toBe(true);
-  });
-
-  it("passes reduceMotion=false when the OS reports reduce motion OFF", async () => {
-    const { AccessibilityInfo } = require("react-native");
-    (AccessibilityInfo.isReduceMotionEnabled as jest.Mock).mockResolvedValue(false);
-    await renderHome();
-    await act(async () => {});
-    expect(mockRingProps.reduceMotion).toBe(false);
   });
 });
 

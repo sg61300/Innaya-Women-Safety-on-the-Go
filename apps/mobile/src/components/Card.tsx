@@ -3,7 +3,7 @@ import { View, Pressable, type StyleProp, type ViewStyle } from "react-native";
 import { useTheme } from "../theme";
 import { elevation, hairline, type ElevationLevel } from "../theme/elevation";
 
-// VAIRA v2 card system (founder b14). Three variants:
+// INNAYA v2 card system (founder b14). Three variants:
 //  - "flat"   : token border, no shadow (dense lists, tiles). Default, so every
 //               existing <Card/> keeps its exact look.
 //  - "raised" : soft drop shadow, for content cards that should lift off the page.

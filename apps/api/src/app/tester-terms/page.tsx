@@ -69,7 +69,7 @@ export default function TesterTermsPage() {
     >
       <h1 style={{ fontSize: 28, marginBottom: 8 }}>INNAYA Tester terms</h1>
       <p style={{ color: "#A0A0A8", marginTop: 0 }}>
-        Version <code>tester-terms-2026-09-24</code>. Draft, under legal review. By using this test build you agree to
+        Version <code>tester-terms-2026-09-24</code>. Draft — under legal review. By using this test build you agree to
         these terms.
       </p>
 

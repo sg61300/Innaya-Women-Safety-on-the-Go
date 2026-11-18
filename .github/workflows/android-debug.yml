@@ -44,6 +44,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # app.config.ts requires this file at prebuild (founder Q90).
+      - name: Write google-services.json from secret
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: printf '%s' "$GOOGLE_SERVICES_JSON" > apps/mobile/google-services.json
+
       - run: npx expo prebuild --platform android --clean --no-install
         working-directory: apps/mobile
         env:

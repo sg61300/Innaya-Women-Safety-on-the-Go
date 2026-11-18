@@ -3,6 +3,7 @@ import { View, Image, Switch, Pressable, Linking } from "react-native";
 import { useTheme } from "../theme";
 import { Card } from "./Card";
 import { Text } from "./Text";
+import { PhotoRetentionNotice } from "./PhotoRetentionNotice";
 import { supabase } from "../lib/supabase";
 import { events } from "../lib/events";
 import { TRAINING_PROMISES, TERMS_VERSION } from "../data/terms";
@@ -160,6 +161,11 @@ export function PrivacyTab({
             </Pressable>
           </View>
         ))}
+      </Card>
+
+      {/* Fix lane D6: how long trip photos are kept */}
+      <Card>
+        <PhotoRetentionNotice />
       </Card>
 
       {/* (4) Data controls (Task 34 wires the handlers) */}

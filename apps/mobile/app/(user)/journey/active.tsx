@@ -161,6 +161,8 @@ export default function JourneyActiveScreen() {
 
   return (
     <Screen topInset={false} testID="active-screen">
+      {/* Phase 3: "Live Journey" title; the sole back control is the top-bar one. */}
+      <Text variant="title" accessibilityRole="header" color="primary">{i18n.t("active.title")}</Text>
       <View style={{ flex: 1 }}>
         <MapView testID="active-map" style={{ flex: 1 }} region={pos ? { latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.02, longitudeDelta: 0.02 } : undefined}>
           {hasRoute ? <Polyline testID="active-route" coordinates={[from, to]} strokeColor={p.brand} strokeWidth={4} /> : null}
@@ -169,7 +171,7 @@ export default function JourneyActiveScreen() {
         </MapView>
 
         {/* Background tint: static danger in a danger zone, else a calm pulse. */}
-        <PulseTint state={ctx.state} dangerZone={dangerZone} />
+        <PulseTint state={ctx.cancelWaiting || ctx.quietAlarm ? "SAFE" : ctx.state} dangerZone={dangerZone} />
 
         {/* Recording indicator. */}
         <View testID="active-recording" style={{ position: "absolute", top: 14, right: 14, flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: p.bgCard, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 }}>

@@ -110,8 +110,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Through env, not inline: inline, the shell strips the JSON's double quotes
+      # and the file comes out invalid.
       - name: Write google-services.json from secret
-        run: printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" > apps/mobile/google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: printf '%s' "$GOOGLE_SERVICES_JSON" > apps/mobile/google-services.json
 
       - name: Expo prebuild (android, clean)
         run: npx expo prebuild --platform android --clean --no-install
@@ -169,6 +173,24 @@ jobs:
       - name: Gradle assembleRelease (JS bundle embedded)
         working-directory: apps/mobile/android
         run: ./gradlew assembleRelease -PreactNativeArchitectures=${{ github.event.inputs.arch }} --no-daemon --stacktrace --max-workers=2 2>&1 | tee gradle-build.log
+
+      # C-T3 (founder Q90): fail the build if Firebase did not reach it, so a future
+      # build can't silently lose push. android/app/google-services.json exists only
+      # when app.config.ts names the file; google_app_id is what the Google Services
+      # Gradle plugin generates from it. Prints no values from the file.
+      - name: Check Firebase settings are in the build
+        working-directory: apps/mobile/android/app
+        run: |
+          set -euo pipefail
+          if [ ! -s google-services.json ]; then
+            echo "::error::android/app/google-services.json is missing or empty: push would not work."
+            exit 1
+          fi
+          if ! grep -rqs 'name="google_app_id"' build/generated/res; then
+            echo "::error::google_app_id was not generated: push would not work."
+            exit 1
+          fi
+          echo "Firebase settings found in the build."
 
       - name: Tail gradle log
         if: always()

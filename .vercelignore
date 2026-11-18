@@ -27,7 +27,6 @@ Past Mistakes and Lessons/
 !public/**/*.png
 !apps/api/public/
 !apps/api/public/**/*.webp
-!public/**/*.png
 !apps/api/public/**/*.png
 # Next.js file-convention favicons live under src/app, which *.png also excludes.
 !apps/api/src/app/icon.png

@@ -175,6 +175,19 @@ export default function Profile() {
       const { data } = await supabase.auth.getUser();
       const userId = data.user?.id;
       if (!userId) throw new Error("no-session");
+      // Owner 2026-11-11: her own number is never one of her guardians. The database refuses it
+      // too (migration 0035); a failed read here leaves that check to the database.
+      const own = await supabase.from("profiles").select("phone").eq("id", userId).maybeSingle().then((r) => (r.data as { phone?: string | null } | null)?.phone ?? null, () => null);
+      if (own && parsed.data.contacts.some((c) => c.phone === own)) {
+        setErrors({ contacts: i18n.t("profile.errOwnNumber") });
+        return;
+      }
+      // Owner 2026-11-12: her own email is never a guardian's email either.
+      const ownEmail = data.user?.email?.trim().toLowerCase();
+      if (ownEmail && parsed.data.contacts.some((x) => x.email?.trim().toLowerCase() === ownEmail)) {
+        setErrors({ contacts: i18n.t("profile.errOwnEmail") });
+        return;
+      }
       await saveProfile(userId, parsed.data);
       await uploadPhoto(userId);
       await AsyncStorage.removeItem(DRAFT_KEY);

@@ -7,7 +7,7 @@ import { useSession } from "../store/session";
 // unavailable (permission denied / no GPS). It must (a) request with high accuracy
 // and (b) surface a visible error instead of doing nothing.
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }), useNavigation: () => ({ addListener: () => () => {}, dispatch: jest.fn() }) }));
 jest.mock("expo-camera", () => {
   const React2 = require("react");
   const { View } = require("react-native");

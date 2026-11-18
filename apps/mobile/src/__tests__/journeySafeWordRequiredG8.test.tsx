@@ -7,7 +7,7 @@ import i18n from "../i18n";
 // G8: the safe word gates arming (canSubmit) but was not marked required. Assert
 // the required helper text is shown and the label carries the asterisk marker.
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }), useNavigation: () => ({ addListener: () => () => {}, dispatch: jest.fn() }) }));
 jest.mock("expo-camera", () => {
   const React2 = require("react");
   const { View } = require("react-native");

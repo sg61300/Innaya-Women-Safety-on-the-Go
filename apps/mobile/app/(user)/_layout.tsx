@@ -11,6 +11,8 @@ import { ExpiryNotice } from "../../src/components/ExpiryNotice";
 import { BatteryPrompt } from "../../src/components/BatteryPrompt";
 import { SosModeSheet } from "../../src/components/SosModeSheet";
 import { SilentAlarmOverlay } from "../../src/components/SilentAlarmOverlay";
+import { CancelWaitingNotice } from "../../src/components/CancelWaitingNotice";
+import { PhotoCleanupPrompt } from "../../src/components/PhotoCleanupPrompt";
 import { runner } from "../../src/services/protocolRunner";
 
 export default function UserLayout() {
@@ -69,6 +71,9 @@ export default function UserLayout() {
       {/* ADR-043 item 3 — the calm silent-alarm surface (shown when alarmMode is
           silent); its "Not an emergency" opens the same guardian cancel flow. */}
       <SilentAlarmOverlay />
+      {/* Founder Q120, Q121: the status icon and its box while a guardian cancel waits. */}
+      <CancelWaitingNotice />
+      <PhotoCleanupPrompt />
       {/* ADR-043 item 1 — the Siren/Silent mode choice on the wearer's own SOS tap. */}
       <SosModeSheet visible={sosSheet} onChoose={onSosChoose} />
       {/* ADR-042 — banner shown when the phone returns to an already-archived alarm. */}

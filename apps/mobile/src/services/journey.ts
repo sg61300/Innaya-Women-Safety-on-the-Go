@@ -50,6 +50,14 @@ export async function isBlacklisted(plate: string): Promise<boolean> {
   return Boolean(data);
 }
 
+// Founder Q123, Q124: a journey starts only if a guardian has an email id, so her alarm always has
+// someone to ask. The email is not verified yet (planned for MVP version 2). Throws if unreadable.
+export async function hasGuardianWithEmail(userId: string): Promise<boolean> {
+  const { data, error } = await supabase.from("contacts").select("email").eq("owner_id", userId);
+  if (error) throw error;
+  return ((data ?? []) as { email: string | null }[]).some((c) => !!c.email?.trim());
+}
+
 // J2: a minimal emergency journey for an SOS raised from Home with no armed
 // journey. Guardians are alerted by /api/journey-state, which needs a journey row
 // that exists and is owned by the caller (RLS journeys_owner). There is no safe

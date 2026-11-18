@@ -1,6 +1,6 @@
 // Pilot city catalogue for journey setup. Each entry carries a bounding box
 // [latMin, latMax, lngMin, lngMax] so a raw GPS fix can be mapped to the city
-// whose local unsafe-zone data VAIRA should load. Ghaziabad sits inside the
+// whose local unsafe-zone data INNAYA should load. Ghaziabad sits inside the
 // wider Delhi NCR box, so it is listed BEFORE Delhi and its tighter box wins on
 // a first-hit scan. `other` is the fallback and carries no box.
 export type CityKey =

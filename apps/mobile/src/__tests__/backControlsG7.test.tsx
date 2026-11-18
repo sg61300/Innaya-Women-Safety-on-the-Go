@@ -3,7 +3,6 @@ import { render, act, fireEvent } from "@testing-library/react-native";
 import { Alert, BackHandler } from "react-native";
 import { ThemeProvider } from "../theme";
 import { useSession } from "../store/session";
-import { ProfileBack } from "../components/ProfileChrome";
 
 // G7: journey-plan and safety-words had no on-screen back; hardware Back on a
 // filled journey form discarded it without confirming.
@@ -11,11 +10,19 @@ import { ProfileBack } from "../components/ProfileChrome";
 const mockBack = jest.fn();
 const mockReplace = jest.fn();
 const mockCanGoBack = jest.fn(() => true);
+const mockDispatch = jest.fn();
+const mockBeforeRemove: { cb: ((e: any) => void) | null } = { cb: null };
+let mockParams: Record<string, unknown> = {};
 jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: (...a: unknown[]) => mockReplace(...a), push: jest.fn(), navigate: jest.fn(), back: mockBack, canGoBack: () => mockCanGoBack() }),
   router: { replace: (...a: unknown[]) => mockReplace(...a), push: jest.fn(), back: (...a: unknown[]) => mockBack(...a), canGoBack: () => mockCanGoBack() },
-  useLocalSearchParams: () => ({}),
+  useNavigation: () => ({
+    addListener: (ev: string, cb: (e: any) => void) => { if (ev === "beforeRemove") mockBeforeRemove.cb = cb; return () => {}; },
+    dispatch: (...a: unknown[]) => mockDispatch(...a),
+  }),
+  useLocalSearchParams: () => mockParams,
 }));
+jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn().mockResolvedValue(undefined) }));
 jest.mock("expo-camera", () => {
   const React2 = require("react");
   const { View } = require("react-native");
@@ -53,6 +60,7 @@ jest.mock("../lib/supabase", () => ({
 
 import JourneyNewScreen from "../../app/(user)/journey/new";
 import SafetyWords from "../../app/(setup)/safety-words";
+import ConfirmSafeScreen from "../../app/(guardian)/confirm-safe";
 
 let backCb: (() => boolean) | null = null;
 // Set the spies up once — repeatedly spying/restoring across tests left a stale
@@ -86,34 +94,54 @@ const press = async (r: Awaited<ReturnType<typeof render>>, id: string) => {
 beforeEach(() => {
   mockBack.mockClear();
   mockReplace.mockClear();
+  mockDispatch.mockClear();
   mockCanGoBack.mockReset();
   mockCanGoBack.mockReturnValue(true);
   (Alert.alert as jest.Mock).mockClear();
   backCb = null;
+  mockBeforeRemove.cb = null;
+  mockParams = {};
 });
 
-test("journey: on-screen back present and calls router.back when the form is clean", async () => {
-  const r = await renderJourney();
-  await press(r, "journey-back");
-  expect(mockBack).toHaveBeenCalled();
+// Phase 3b (founder 1-A): the journey form's own back link is gone; the only
+// back control is the top-bar arrow. Leaving a dirty form is caught by the
+// single `beforeRemove` interceptor (top-bar back, hardware back and swipe all
+// raise it), which shows the SAME Discard dialog exactly once.
+const fireBeforeRemove = async () => {
+  const e = { preventDefault: jest.fn(), data: { action: { type: "GO_BACK" } } };
+  await act(async () => { mockBeforeRemove.cb!(e); await new Promise((res) => setTimeout(res, 0)); });
+  return e;
+};
+
+test("journey: the removed form has no on-screen back link and no BackHandler path", async () => {
+  await renderJourney();
+  expect(mockBeforeRemove.cb).toBeInstanceOf(Function); // the single interceptor is registered
+  expect(backCb).toBeNull();                            // no hardware-back listener -> no double dialog
 });
 
-test("journey: hardware Back on a filled form confirms instead of discarding", async () => {
+test("journey: dirty form + back shows the Discard dialog once and Keep editing stays", async () => {
   const r = await renderJourney();
   await act(async () => { fireEvent.changeText(r.getByTestId("journey-safeword"), "purple kettle"); });
-  expect(typeof backCb).toBe("function");
-  let handled: boolean | undefined;
-  await act(async () => { handled = backCb!(); });
-  expect(handled).toBe(true); // consumed, not a silent discard
-  expect(Alert.alert).toHaveBeenCalled();
-  expect(mockBack).not.toHaveBeenCalled(); // navigation waits for confirmation
+  const e = await fireBeforeRemove();
+  expect(e.preventDefault).toHaveBeenCalledTimes(1);   // blocked
+  expect(Alert.alert).toHaveBeenCalledTimes(1);        // shown ONCE
+  expect(mockDispatch).not.toHaveBeenCalled();         // Keep editing -> no navigation yet
 });
 
-test("journey: hardware Back on a clean form is not intercepted", async () => {
+test("journey: dirty form + Discard dispatches the blocked action (leaves)", async () => {
+  const r = await renderJourney();
+  await act(async () => { fireEvent.changeText(r.getByTestId("journey-safeword"), "purple kettle"); });
+  const e = await fireBeforeRemove();
+  const buttons = (Alert.alert as jest.Mock).mock.calls[0][2] as { style?: string; onPress?: () => void }[];
+  const discard = buttons.find((b) => b.style === "destructive")!;
+  await act(async () => { discard.onPress!(); });
+  expect(mockDispatch).toHaveBeenCalledWith(e.data.action);
+});
+
+test("journey: clean form leaves with no dialog", async () => {
   await renderJourney();
-  let handled: boolean | undefined;
-  await act(async () => { handled = backCb!(); });
-  expect(handled).toBe(false);
+  const e = await fireBeforeRemove();
+  expect(e.preventDefault).not.toHaveBeenCalled();
   expect(Alert.alert).not.toHaveBeenCalled();
 });
 
@@ -136,9 +164,12 @@ test("safety-words: back replaces to profile when there is no history", async ()
   expect(mockBack).not.toHaveBeenCalled();
 });
 
-test("profile child back returns to the Profile card list", async () => {
-  const r = await render(<ThemeProvider><ProfileBack title="Vitals" /></ThemeProvider>);
-  await press(r, "profile-back");
-  expect(mockReplace).toHaveBeenCalledWith("/(user)/profile");
-  expect(mockBack).not.toHaveBeenCalled();
+// Phase 3b (founder 2-a): confirm-safe's own "‹ Back" link was removed; the
+// top-bar arrow is the only back control.
+test("confirm-safe: no on-screen back link (exactly one back control = top bar)", async () => {
+  mockParams = { link: "https://example.com/vote" };
+  let r: Awaited<ReturnType<typeof render>>;
+  await act(async () => { r = await render(<ThemeProvider><ConfirmSafeScreen /></ThemeProvider>); });
+  expect(r!.queryByTestId("confirm-back")).toBeNull();
+  expect(r!.getByTestId("confirm-forward")).toBeTruthy();
 });

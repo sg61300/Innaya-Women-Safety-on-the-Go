@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 // email (required) + city (optional) + one consent checkbox, and posts to the
 // shared POST /api/waitlist with source:"campaign". The route enforces email
 // server-side, de-dupes on email, and sends the confirmation email. Inline
-// success state replaces the form; a duplicate is a friendly "already registered".
+// success state replaces the form; a duplicate is a friendly "already on the list".
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -85,10 +85,10 @@ export function WaitlistCampaign() {
     return (
       <div className="success" role="status" aria-live="polite" ref={doneRef} tabIndex={-1}>
         <div className="tick" aria-hidden>&#10003;</div>
-        <h2>{dup ? "You're already registered." : "You're on the list."}</h2>
+        <h2>{dup ? "You're already on the list." : "You're on the list."}</h2>
         <p>
           {dup
-            ? "Your place on the list is saved."
+            ? "We already have your email, no need to join twice. We'll be in touch as tester invites go out."
             : "Thanks for joining. Check your inbox for a note from us, and we'll email your tester invite soon."}
         </p>
       </div>

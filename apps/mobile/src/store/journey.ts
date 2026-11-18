@@ -51,6 +51,13 @@ type J = {
   // A one-shot low-battery charge prompt raised on a downward 20 %/10 % crossing.
   batteryPrompt: { pct: number } | null;
   expiry: Expiry | null;
+  // Fix AD round 2: the guardian cancel is waiting for the network / nobody can be asked (Q111).
+  cancelOffline: boolean;
+  cancelNoGuardian: boolean;
+  // Founder Q120, Q121: a guardian just approved; the box says so, then this clears.
+  cancelApproved: boolean;
+  // Q118: uploaded offline photos still on this phone, once the trip is over; null = do not ask.
+  photoCleanup: number | null;
   vitals: VitalsSample | null;
   // F2 (b16): real siren audio outcome, set by src/services/siren.ts so the
   // emergency checklist can show "Siren on" as failed when audio never started.
@@ -77,10 +84,14 @@ export const useJourney = create<J & { set: (p: Partial<J>) => void; reset: () =
   guardiansPending: false,
   batteryPrompt: null,
   expiry: null,
+  cancelOffline: false,
+  cancelNoGuardian: false,
+  cancelApproved: false,
+  photoCleanup: null,
   vitals: null,
   sirenStatus: "unknown",
   camRunning: false,
   camLastFrameAt: null,
   set: (p) => set(p),
-  reset: () => set({ journey: null, ctx: initialContext(), challenge: null, lastScore: 0, battery: null, lite: false, blockedReason: null, guardiansPending: false, batteryPrompt: null, expiry: null, vitals: null, sirenStatus: "unknown", camRunning: false, camLastFrameAt: null }),
+  reset: () => set({ cancelOffline: false, cancelNoGuardian: false, cancelApproved: false, photoCleanup: null, journey: null, ctx: initialContext(), challenge: null, lastScore: 0, battery: null, lite: false, blockedReason: null, guardiansPending: false, batteryPrompt: null, expiry: null, vitals: null, sirenStatus: "unknown", camRunning: false, camLastFrameAt: null }),
 }));

@@ -87,4 +87,8 @@ export const guardian = {
     return post("/api/journey-state", { journeyId, event: { type: "GUARDIAN_LATE_CONFIRM", safe } });
   },
   raiseSos: (journeyId: string) => post("/api/journey-state", { journeyId, event: { type: "SOS" } }),
+  // Fix lane D7 item 9 (founder Q125): the end action after her emergency word, with this
+  // guardian's own signed-in account. The server decides (distress, alarm live, group window).
+  endStatus: (journeyId: string) => get<{ end: "open" | "closed" | "none" }>(`/api/guardian-end?journeyId=${encodeURIComponent(journeyId)}`),
+  endAlarm: (journeyId: string) => post(`/api/guardian-end?journeyId=${encodeURIComponent(journeyId)}`, { confirm: "yes" }),
 };

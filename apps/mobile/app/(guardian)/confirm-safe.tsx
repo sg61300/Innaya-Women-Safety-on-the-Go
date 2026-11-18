@@ -4,10 +4,9 @@
 // Both verdicts go through /api/cancel-confirm (guardian.confirmSafe / somethingWrong),
 // which writes the cancel_calls row that reaches her phone over realtime.
 import { useEffect, useRef, useState } from "react";
-import { View, Image, Pressable, ScrollView } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { View, Image, ScrollView } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { ChevronLeft } from "lucide-react-native";
 import { Screen } from "../../src/components/Screen";
 import { Text } from "../../src/components/Text";
 import { Card } from "../../src/components/Card";
@@ -39,7 +38,6 @@ export default function ConfirmSafeScreen() {
 
 function CancelVoteForward({ link }: { link: string }) {
   const { p } = useTheme();
-  const router = useRouter();
   const opened = useRef(false);
   useEffect(() => {
     if (opened.current) return;
@@ -49,16 +47,8 @@ function CancelVoteForward({ link }: { link: string }) {
   return (
     <Screen scroll padded topInset={false} testID="confirm-safe-screen">
       <View style={{ gap: 16, paddingTop: 8, paddingBottom: 40 }}>
-        <Pressable
-          testID="confirm-back"
-          accessibilityRole="button"
-          accessibilityLabel={i18n.t("confirm.back")}
-          onPress={() => router.back()}
-          style={{ flexDirection: "row", alignItems: "center", minHeight: 48, alignSelf: "flex-start" }}
-        >
-          <ChevronLeft color={p.text} size={24} />
-          <Text variant="body" color="muted">{i18n.t("confirm.back")}</Text>
-        </Pressable>
+        {/* Phase 3b (founder 2-a): back link removed; the top-bar arrow is the
+            only back control (its action is the same plain router.back()). */}
         <Text variant="title" color="primary" testID="confirm-forward">{i18n.t("confirm.openingVotePage")}</Text>
         <Button3D testID="confirm-open-vote" label={i18n.t("confirm.openVotePage")} full onPress={() => void WebBrowser.openBrowserAsync(link)} />
       </View>
@@ -68,7 +58,6 @@ function CancelVoteForward({ link }: { link: string }) {
 
 function ConfirmSafe360({ journeyId, initialName }: { journeyId: string; initialName: string }) {
   const { p } = useTheme();
-  const router = useRouter();
 
   const [name, setName] = useState(initialName);
   const [frames, setFrames] = useState<string[]>([]);
@@ -143,19 +132,8 @@ function ConfirmSafe360({ journeyId, initialName }: { journeyId: string; initial
   return (
     <Screen scroll padded topInset={false} testID="confirm-safe-screen">
       <View style={{ gap: 16, paddingTop: 8, paddingBottom: 40 }}>
-        <Pressable
-          testID="confirm-back"
-          accessibilityRole="button"
-          accessibilityLabel={i18n.t("confirm.back")}
-          onPress={() => router.back()}
-          style={{ flexDirection: "row", alignItems: "center", minHeight: 48, alignSelf: "flex-start" }}
-        >
-          <ChevronLeft color={p.text} size={24} />
-          <Text variant="body" color="muted">
-            {i18n.t("confirm.back")}
-          </Text>
-        </Pressable>
-
+        {/* Phase 3b (founder 2-a): back link removed; the top-bar arrow is the
+            only back control. */}
         <Text variant="title" color="primary">
           {name}
         </Text>

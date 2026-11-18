@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, Share } from "react-native";
 import { Screen } from "../../../src/components/Screen";
 import { Text } from "../../../src/components/Text";
-import { ProfileBack } from "../../../src/components/ProfileChrome";
 import { PrivacyTab } from "../../../src/components/PrivacyTab";
 import { supabase } from "../../../src/lib/supabase";
 import { history } from "../../../src/services/history";
@@ -67,7 +66,7 @@ export default function PrivacyScreen() {
 
   return (
     <Screen scroll padded topInset={false} testID="profile-screen">
-      <ProfileBack title={i18n.t("profile.tabPrivacy")} />
+      <Text variant="title" accessibilityRole="header">{i18n.t("profile.tabPrivacy")}</Text>
       {userId ? <PrivacyTab userId={userId} onDownloadData={onDownloadData} onDeleteAccount={onDeleteAccount} /> : <Text variant="body" color="muted">…</Text>}
     </Screen>
   );

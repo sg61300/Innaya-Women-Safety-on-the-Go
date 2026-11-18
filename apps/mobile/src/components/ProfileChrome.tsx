@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { View, Pressable } from "react-native";
-import { ChevronRight, ChevronLeft } from "lucide-react-native";
-import { router } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
 import { Text } from "./Text";
 import { type Button3DIcon } from "./Button3D";
+import { Heartbeat } from "./Heartbeat";
 import { useTheme } from "../theme";
 
 // profile-cards: a single row in the Profile card list. Icon slot, title, one-
@@ -14,7 +14,7 @@ import { useTheme } from "../theme";
 const LIFT = 4;
 
 export function ProfileCard({
-  icon: Icon, title, description, value, onPress, testID,
+  icon: Icon, title, description, value, onPress, testID, pulse,
 }: {
   icon: Button3DIcon;
   title: string;
@@ -22,6 +22,8 @@ export function ProfileCard({
   value?: string;
   onPress: () => void;
   testID?: string;
+  // Founder 2026-10-12: the Vitals row's icon beats "like a heartbeat".
+  pulse?: boolean;
 }) {
   const { p, d } = useTheme();
   const [pressed, setPressed] = useState(false);
@@ -42,7 +44,11 @@ export function ProfileCard({
         }}
       >
         <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: p.brandSoft, alignItems: "center", justifyContent: "center" }}>
-          <Icon size={22} color={p.brand} strokeWidth={2.2} />
+          {pulse ? (
+            <Heartbeat><Icon size={22} color={p.brand} strokeWidth={2.2} /></Heartbeat>
+          ) : (
+            <Icon size={22} color={p.brand} strokeWidth={2.2} />
+          )}
         </View>
         <View style={{ flex: 1 }}>
           <Text variant="bodyStrong">{title}</Text>
@@ -55,25 +61,7 @@ export function ProfileCard({
   );
 }
 
-// Back header shared by every Profile child screen. A child can be reached
-// directly from another tab (for example Home → Vitals), so router.back() is
-// not guaranteed to land on the Profile card list. Always target that list;
-// ProfileGate remains mounted, so an already-entered password stays valid.
-export function ProfileBack({ title }: { title: string }) {
-  const { p } = useTheme();
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 8, marginBottom: 8 }}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={title}
-        testID="profile-back"
-        onPress={() => router.replace("/(user)/profile" as never)}
-        hitSlop={12}
-        style={{ minHeight: 44, minWidth: 44, alignItems: "flex-start", justifyContent: "center" }}
-      >
-        <ChevronLeft size={26} color={p.brand} strokeWidth={2.4} />
-      </Pressable>
-      <Text variant="title">{title}</Text>
-    </View>
-  );
-}
+// Phase 3 (founder 2026-10-15): the former ProfileBack/BackHeader/BackChevron
+// title-side back control was removed. The sole back control is the top-bar
+// one (AppHeader); screen titles are now plain header Text. Only ProfileCard
+// remains here.

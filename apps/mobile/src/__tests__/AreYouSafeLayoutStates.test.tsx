@@ -25,7 +25,7 @@ test("urgent pill at <=2s uses the critical chip colour and the confirm button f
   expect(getByText("ALERTING IN SECONDS").props.style).toEqual(
     expect.arrayContaining([expect.objectContaining({ color: d.chip.critical.fg })]),
   );
-  fireEvent.press(getByText("I'm safe — confirm"));
+  fireEvent.press(getByText("I'm safe, confirm"));
   expect(onSafe).toHaveBeenCalled();
 });
 

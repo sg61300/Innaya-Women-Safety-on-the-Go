@@ -12,12 +12,12 @@ test.each([
   ["IDLE", "Not travelling"],
   ["ARMED", "Monitoring starts soon"],
   ["SAFE", "Journey active · Safe"],
-  ["AMBER", "Amber — checking on you"],
-  ["LATE_CHECK", "Amber — checking on you"],
+  ["AMBER", "Amber. Checking on you"],
+  ["LATE_CHECK", "Amber. Checking on you"],
   ["EMERGENCY", "Emergency"],
-  ["CRITICAL", "Critical — help is coming"],
-  ["CANCEL_HOLD", "Critical — help is coming"],
-  ["RESOLVED_MONITORING", "Alarm cancelled — watching closely"],
+  ["CRITICAL", "Critical. Help is coming"],
+  ["CANCEL_HOLD", "Critical. Help is coming"],
+  ["RESOLVED_MONITORING", "Alarm cancelled. Watching closely"],
   ["RESOLVED", "Arrived safely"],
 ] as const)("%s → %s", async (s, label) => {
   (await w(<StatusChip state={s as any} />)).getByText(label);

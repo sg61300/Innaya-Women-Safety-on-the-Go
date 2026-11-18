@@ -31,9 +31,6 @@ export function makeSimulationCancelFlowDeps(): CancelFlowDeps {
       throw new Error("simulation must not open a guardian cancel request");
     },
 
-    // No guardian verdict to wait for in a drill.
-    subscribeVerdict: () => () => {},
-
     // The proof goes to the tester's OWN email through /api/simulate-proof, which
     // uploads the media server-side under simulation/<userId>/ and sends one email.
     // Resolves with the address it was sent to (shown on the "sent" screen).

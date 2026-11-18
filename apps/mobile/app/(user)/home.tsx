@@ -3,19 +3,24 @@ import { View, ScrollView, Image, Pressable, Linking, AccessibilityInfo } from "
 import { useScrollTopOnFocus } from "../../src/lib/useScrollTopOnFocus";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { HelpCircle, Phone, Video, X } from "lucide-react-native";
+import { HelpCircle, X } from "lucide-react-native";
 import type { ProtocolState } from "@vaira/core";
 import { useTheme, darkenUntil } from "../../src/theme";
 import { Text } from "../../src/components/Text";
 import { Card } from "../../src/components/Card";
 import { Button3D } from "../../src/components/Button3D";
 import { IconButton } from "../../src/components/IconButton";
-import { GuardianRing, type RingState } from "../../src/components/GuardianRing";
+import { type RingState } from "../../src/components/GuardianRing";
+import { StatusMedallion } from "../../src/components/StatusMedallion";
+import { RouteProgress } from "../../src/components/RouteProgress";
+import { Heartbeat } from "../../src/components/Heartbeat";
 import { StatusChip } from "../../src/components/StatusChip";
 import { VoiceFab, FAB_INSET } from "../../src/components/VoiceFab";
 import { JourneyCard } from "../../src/components/JourneyCard";
 import { GradientBand, BAND_INK } from "../../src/components/GradientBand";
 import { Illustration } from "../../src/components/Illustration";
+import { MotionIllustration } from "../../src/components/MotionIllustration";
+import { useMotionActive } from "../../src/lib/useMotionActive";
 import { TourTarget, useTour, useTourScroller } from "../../src/components/tour/TourProvider";
 import { useJourney } from "../../src/store/journey";
 import { runner } from "../../src/services/protocolRunner";
@@ -47,6 +52,19 @@ function greetingKey(h: number): string {
   return "home.greetEvening";
 }
 
+// Rose-gold charm icons for the Call / Video pills (founder 2026-10-13, 20 dp).
+// They fit Button3D's icon slot and ignore the line-icon size/colour props.
+const WINE = "#4A1F2E";
+const CHARM_DP = 20;
+const CALL_CHARM = require("../../assets/illustrations/charm-call.webp");
+const VIDEO_CHARM = require("../../assets/illustrations/charm-video.webp");
+function CallCharm() {
+  return <Image source={CALL_CHARM} style={{ width: CHARM_DP, height: CHARM_DP }} resizeMode="contain" accessibilityIgnoresInvertColors />;
+}
+function VideoCharm() {
+  return <Image source={VIDEO_CHARM} style={{ width: CHARM_DP, height: CHARM_DP }} resizeMode="contain" accessibilityIgnoresInvertColors />;
+}
+
 export default function HomeScreen() {
   const { p, d } = useTheme();
   const router = useRouter();
@@ -69,6 +87,7 @@ export default function HomeScreen() {
   const scrollRef = useRef<ScrollView>(null);
   useScrollTopOnFocus(scrollRef); // F17: reset to top when the Home tab regains focus
   useTourScroller("/(user)/home", scrollRef); // F6: let the tour scroll targets into view
+  const motionActive = useMotionActive(); // in-app motions run only while Home is visible + reduce-motion off
 
   // The hero ring is the brand's living element; animate it unless the user has
   // asked the OS to reduce motion. Read once on mount and track live changes.
@@ -200,14 +219,38 @@ export default function HomeScreen() {
   // card's own guardians field is overridden with it so the two never disagree.
   const guardianCount = watchers;
 
-  const rState = ringState(ctx.state);
-  const statusState = ctx.state === "IDLE" ? "idle" : ctx.state;
+  // Fix AD round 2: while a guardian cancel waits, the alarm is real but her screen is normal.
+  const shownState = ctx.cancelWaiting || ctx.quietAlarm ? "SAFE" : ctx.state;
+  const rState = ringState(shownState);
+  const statusState = shownState === "IDLE" ? "idle" : shownState;
   const now = new Date();
+
+  // Route-line progress (founder 2026-10-12, option B; under the medallion, journey
+  // only). Derived purely for DISPLAY from the journey's existing numeric fields
+  // (start_at + eta_seconds) — no safety logic here. Missing/zero duration (e.g. an
+  // SOS journey, or an older stored journey without a positive eta) → render nothing.
+  const routeProg = (() => {
+    if (!journey) return null;
+    const j = journey as { start_at?: unknown; startAt?: unknown; eta_seconds?: unknown };
+    const raw = j.start_at ?? j.startAt;
+    const startMs = typeof raw === "number" ? raw : Date.parse(String(raw));
+    const etaSec = Number(j.eta_seconds ?? 0);
+    if (!Number.isFinite(startMs) || !(etaSec > 0)) return null;
+    const expectedMs = startMs + etaSec * 1000;
+    const nowMs = now.getTime();
+    const fraction = Math.max(0, Math.min(1, (nowMs - startMs) / (expectedMs - startMs)));
+    const lateMs = nowMs - expectedMs;
+    const late = lateMs > 0;
+    const lateMinutes = late ? Math.max(1, Math.round(lateMs / 60000)) : 0;
+    const fmt = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    return { fraction, late, lateMinutes, startLabel: fmt(startMs), endLabel: fmt(expectedMs) };
+  })();
 
   // Quick-action face colours pass the same darkenUntil contrast guard as d.btn
   // (white glyph/label = d.onPrimary), so they never fail 4.5:1 in any palette.
-  const callColor = darkenUntil(p.stateSafe, d.onPrimary);
-  const videoColor = darkenUntil(p.teal, d.onPrimary);
+  // Founder 2026-10-13: "2 Wine + edge" so the rose-gold charms sit on a warm
+  // jewellery face; both buttons share it (charm + word tell them apart).
+  const quickFace = darkenUntil(WINE, d.onPrimary);
 
   return (
     <View style={{ flex: 1, backgroundColor: p.bgBase }}>
@@ -250,20 +293,42 @@ export default function HomeScreen() {
             testID="ring-guardians"
             onPress={() => router.navigate("/(user)/profile?section=guardians")}
           >
-            <GuardianRing state={rState} guardians={guardianCount} emblem={emblem} reduceMotion={reduceMotion} />
+            <StatusMedallion state={rState} guardians={guardianCount} emblem={emblem} reduceMotion={reduceMotion} />
           </Pressable>
           <StatusChip state={statusState} startAt={journey?.startAt} />
+          {routeProg ? (
+            <View style={{ width: "100%", paddingHorizontal: 8, marginTop: 4 }}>
+              <RouteProgress
+                fraction={routeProg.fraction}
+                startLabel={routeProg.startLabel}
+                endLabel={routeProg.endLabel}
+                late={routeProg.late}
+                lateMinutes={routeProg.lateMinutes}
+                stateColor={d.ring.stateColor[rState]}
+                reduceMotion={reduceMotion}
+              />
+            </View>
+          ) : null}
         </TourTarget>
 
-        {/* Quick actions. Voice listening has one dedicated floating control below;
-            keeping it out of this row gives Call and Video enough width to stay
-            readable on small phones. */}
+        {/* Voice mic (founder 2026-10-12): in normal flow (scrolls with the page),
+            right-aligned so on first view it sits in the empty space ABOVE the Video
+            button, towards its right end, in its own row so it overlaps nothing at any
+            font size / phone size. */}
+        <View style={{ alignItems: "flex-end" }}>
+          <VoiceFab inline listening={listening} denied={micDenied} disabled={!!journey}
+            accessibilityLabel={i18n.t(journey ? "home.micJourney" : micDenied ? "home.micPermissionRequired" : listening ? "home.micStop" : "home.micStart")}
+            onToggle={() => void toggleHomeListening()} />
+        </View>
+
+        {/* Quick actions. Call and Video keep the full row width for readability on
+            small phones (the mic now sits in its own row above). */}
         <TourTarget id="quickActions" testID="home-quick-actions" style={{ flexDirection: "row", gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Button3D full variant="pill" icon={Phone} color={callColor} label={i18n.t("home.callGuardian")} onPress={guardianCall} testID="quick-call" />
+            <Button3D full variant="pill" icon={CallCharm} color={quickFace} edge label={i18n.t("home.callGuardian")} onPress={guardianCall} testID="quick-call" />
           </View>
           <View style={{ flex: 1 }}>
-            <Button3D full variant="pill" icon={Video} color={videoColor} label={i18n.t("home.videoCheck")} onPress={guardianVideo} testID="quick-video" />
+            <Button3D full variant="pill" icon={VideoCharm} color={quickFace} edge label={i18n.t("home.videoCheck")} onPress={guardianVideo} testID="quick-video" />
           </View>
         </TourTarget>
 
@@ -306,7 +371,8 @@ export default function HomeScreen() {
           <Card variant="raised" testID="regions-summary" onPress={() => router.navigate("/(user)/regions")} style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Text variant="label" color="muted" style={{ marginBottom: 6 }}>{i18n.t("home.unsafeRegions")}</Text>
-              <Illustration name="class-map-pin" size={34} />
+              <MotionIllustration name="class-map-pin" size={64} variant="pin" active={motionActive} />
+
             </View>
             <Text variant="title" testID="regions-summary-value">{regionError ? i18n.t("home.cardError") : (regionCount ?? i18n.t("home.loading"))}</Text>
             <Text variant="caption" color="muted">{regionError ? i18n.t("home.tryAgain") : i18n.t("home.regionsNear")}</Text>
@@ -314,7 +380,7 @@ export default function HomeScreen() {
           <Card variant="raised" testID="vitals-summary" onPress={() => router.navigate("/(user)/profile/vitals")} style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Text variant="label" color="muted" style={{ marginBottom: 6 }}>{i18n.t("home.vitals")}</Text>
-              <Illustration name="vitals" size={34} />
+              <Heartbeat><Illustration name="vitals" size={64} /></Heartbeat>
             </View>
             <Text variant="caption" color="faint">{i18n.t("home.vitalsEmpty")}</Text>
           </Card>
@@ -331,10 +397,10 @@ export default function HomeScreen() {
           </View>
         </Card>
 
-        {/* F4: physical products — VAIRA jewellery collection (external site). */}
+        {/* F4: physical products — INNAYA jewellery collection (external site). */}
         <Card variant="raised" testID="products-card" onPress={() => Linking.openURL(PRODUCTS_URL).catch((e) => console.warn("[home] products link failed", e))}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Image source={emblem} style={{ width: 36, height: 36, resizeMode: "contain" }} accessibilityIgnoresInvertColors />
+            <Illustration name="jewellery-pendant" size={36} />
             <View style={{ flex: 1 }}>
               <Text variant="bodyStrong" style={{ marginBottom: 2 }}>{i18n.t("home.productsTitle")}</Text>
               <Text variant="caption" color="muted">{i18n.t("home.productsCta")}</Text>
@@ -354,8 +420,6 @@ export default function HomeScreen() {
         </Card>
         </View>
       </ScrollView>
-
-      <VoiceFab listening={listening} denied={micDenied} disabled={!!journey} accessibilityLabel={i18n.t(journey ? "home.micJourney" : micDenied ? "home.micPermissionRequired" : listening ? "home.micStop" : "home.micStart")} onToggle={() => void toggleHomeListening()} />
     </View>
   );
 }

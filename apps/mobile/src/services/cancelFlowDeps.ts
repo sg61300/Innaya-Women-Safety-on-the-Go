@@ -1,20 +1,18 @@
 // ADR-043 item 5 — the real dependencies for the CancelFlow state machine.
 // CancelFlow itself is pure/DI so it stays unit-testable; this factory binds the
-// live password gate, the journey-word verifier, the cancel-request API, the
-// selfies-bucket upload and the guardian-verdict realtime (with a 5 s poll
-// fallback) to that machine. Nothing here runs in tests — they inject fakes.
+// live password gate, the journey-word verifier, the cancel-request API and the
+// selfies-bucket upload to that machine (cancelWatch owns the guardian verdict). Nothing here runs in tests — they inject fakes.
 import * as Crypto from "expo-crypto";
 import { gates } from "./gates";
 import { resolveAccountEmail } from "./appPassword";
 import { runner } from "./protocolRunner";
-import { post, get } from "../lib/api";
+import { cancelOfflineMarker } from "./cancelOfflineMarker";
+import { eventOutbox } from "./eventOutbox";
+import { post } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import { useJourney } from "../store/journey";
 import type { CancelFlowDeps } from "../components/CancelFlow";
 import type { CancelMethod } from "@vaira/core";
-
-type Verdict = "cancel" | "keep" | "reraise" | "pending";
-const POLL_MS = 5000;
 
 // Surfaced by CancelFlow as "the alarm is not active" (a 409 from the route — the
 // journey left an alarm state before the request landed).
@@ -27,10 +25,6 @@ export class NotCancellableError extends Error {
 
 export function makeCancelFlowDeps(): CancelFlowDeps {
   const journeyId = () => (useJourney.getState().journey?.id as string | undefined) ?? "";
-  // The request id is only known after the POST, so the verdict subscription keys
-  // on the journey's open request row.
-  let requestId: string | null = null;
-
   return {
     // Step 1 — the app password (live gate + SecureStore fallback inside gates).
     // X5c: pass the gate's reason through so CancelFlow can tell a wrong password
@@ -43,68 +37,50 @@ export function makeCancelFlowDeps(): CancelFlowDeps {
     // Step 2 — the journey safe word, verified ONLY against this journey (rule 6).
     verifyWord: (w: string) => runner.verifySafeWord(w),
 
-    // Step 3 — open the guardian cancel request. Re-apply CANCEL_REQUESTED locally
-    // (the server applied it too; CANCEL_HOLD ranks below CRITICAL so the runner
-    // would not otherwise adopt the de-escalation) and start the 30 s timeout.
+    // Step 3 — open the guardian cancel request, then mark it locally: the alarm stays
+    // CRITICAL, the siren holds and her screen goes normal. No network on the word path
+    // (founder Q78, Q93): the same local state with the honest message; cancelWatch keeps
+    // retrying until online. The photo/video path offline is unchanged.
     createRequest: async (method: CancelMethod, mediaPath?: string) => {
       try {
+        // What raised this alarm has not reached the server yet: it goes first, in order.
+        if (method === "word" && (await eventOutbox.pending()) > 0) throw new Error("earlier events still to deliver");
         const r = await post<{ requestId: string; asked: number }>("/api/cancel-request", {
           journeyId: journeyId(),
           method,
           mediaPath,
+          alarmMode: useJourney.getState().ctx.alarmMode,
         });
-        requestId = r.requestId;
+        if (Array.isArray(r.asked) && r.asked.length === 0) useJourney.getState().set({ cancelNoGuardian: true });
         void runner.send({ type: "CANCEL_REQUESTED", method });
         return { askedCount: r.asked };
       } catch (e) {
-        if (String((e as Error)?.message ?? e).includes("409")) throw new NotCancellableError();
-        throw e;
+        const msg = String((e as Error)?.message ?? e);
+        if (msg.includes("409")) throw new NotCancellableError();
+        const isHttpError = /\s\d{3}$/.test(msg); // lib/api throws "<path> <status>"
+        if (method !== "word" || isHttpError) throw e;
+        useJourney.getState().set({ cancelOffline: true });
+        // ctx, not the journey row: the row can still hold the mode from before the alarm.
+        const { journey, ctx } = useJourney.getState();
+        await cancelOfflineMarker.save({ id: journeyId(), owner_id: journey?.owner_id, alarm_mode: ctx.alarmMode });
+        await eventOutbox.ensureCancel(journeyId(), ctx.alarmMode);
+        void runner.send({ type: "CANCEL_REQUESTED", method });
+        return { askedCount: 0 };
       }
     },
 
-    // The guardian verdict: Supabase realtime on the request row, plus a 5 s poll
-    // fallback in case the socket drops. A kept/re-raised verdict drives the local
-    // runner back to CRITICAL (GUARDIAN_SAYS_WRONG); a cancel is already applied
-    // server-side and the runner adopts RESOLVED_MONITORING on its next sync.
-    subscribeVerdict: (cb: (v: Verdict) => void) => {
-      let done = false;
-      const fire = (v: Verdict) => {
-        if (done || v === "pending") return;
-        done = true;
-        if (v === "keep" || v === "reraise") void runner.send({ type: "GUARDIAN_SAYS_WRONG" });
-        cb(v);
-      };
-      const jid = journeyId();
-      const ch = supabase
-        .channel?.(`cr:${jid}`)
-        ?.on?.(
-          "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "cancel_requests", filter: `journey_id=eq.${jid}` },
-          (p: { new?: { verdict?: Verdict } }) => { if (p?.new?.verdict) fire(p.new.verdict); },
-        );
-      ch?.subscribe?.();
-      const poll = setInterval(() => {
-        void (async () => {
-          try {
-            if (!requestId) return;
-            const row = await get<{ verdict?: Verdict }>(`/api/cancel-request/${requestId}`);
-            if (row?.verdict) fire(row.verdict);
-          } catch { /* transient; the next tick retries */ }
-        })();
-      }, POLL_MS);
-      return () => {
-        clearInterval(poll);
-        try { if (ch) supabase.removeChannel?.(ch as never); } catch { /* ignore */ }
-      };
-    },
-
     // Step 4 — the wearer's own proof. Upload under a client-generated uuid path so
-    // it exists BEFORE the request is created (the route only checks the
-    // cancel/<journeyId>/ prefix). CancelFlow uploads first, so a failed upload
-    // never opens a medialess request.
+    // it exists BEFORE the request is created (the route checks the
+    // <uid>/cancel/<journeyId>/ prefix). CancelFlow uploads first, so a failed upload
+    // never opens a medialess request. Fix AB (founder Q79): the path starts with her
+    // own user id because the selfies insert policy (0019 selfies_owner_insert) only
+    // allows folder 1 = auth.uid(); the old cancel/<journeyId>/ path was refused.
     uploadMedia: async (localUri: string, method: "photo" | "video") => {
       const ext = method === "photo" ? "jpg" : "mp4";
-      const path = `cancel/${journeyId()}/${Crypto.randomUUID()}.${ext}`;
+      const { data } = await supabase.auth.getSession();
+      const uid = data.session?.user?.id;
+      if (!uid) throw new Error("cancel proof upload: no signed-in user");
+      const path = `${uid}/cancel/${journeyId()}/${Crypto.randomUUID()}.${ext}`;
       const blob = await (await fetch(localUri)).blob();
       const { error } = await supabase.storage
         .from("selfies")

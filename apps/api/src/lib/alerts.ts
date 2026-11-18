@@ -1,6 +1,7 @@
 import { admin } from "./supabaseAdmin";
 import { signGuardianToken } from "./token";
 import { logEvent } from "./events";
+import { notifyContactsWebPush } from "./webPush";
 import type { ProtocolState } from "@vaira/core";
 
 type MailTransport = { sendMail: (message: { from: string; to: string[]; subject: string; html: string }) => Promise<unknown> };
@@ -30,17 +31,19 @@ export async function sendPush(
   body: string,
   data: Record<string, unknown>,
   opts?: { channelId?: string; sound?: string },
-) {
-  if (!tokens.length) return;
+): Promise<boolean> {
+  if (!tokens.length) return true;
   const channelId = opts?.channelId ?? "vaira-alerts";
   const sound = opts?.sound ?? "default";
-  await fetch("https://exp.host/--/api/v2/push/send", {
+  const res = await fetch("https://exp.host/--/api/v2/push/send", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(
       tokens.map((to) => ({ to, title, body, data, priority: "high", channelId, sound })),
     ),
   });
+  // false = Expo refused the whole request. Callers that retry read this; others ignore it.
+  return res?.ok !== false;
 }
 
 export async function sendEmail(to: string[], subject: string, html: string) {
@@ -69,6 +72,8 @@ export async function notifyGuardians(journeyId: string, state: ProtocolState, t
   const { data: active } = await db.from("monitoring_assignments").select("contact_id").eq("journey_id", journeyId).eq("active", true);
   const activeIds = new Set((active ?? []).map((a: any) => a.contact_id));
   const targets = (contacts ?? []).filter((c: any) => all || activeIds.has(c.id));
+  // Started before the app push so neither can hold up or stop the other. Never rejects.
+  const webPush = notifyContactsWebPush(journeyId, targets.map((c: any) => c.id), title, body);
   const linked = targets.map((c: any) => c.linked_user_id).filter(Boolean) as string[];
   const { data: profs } = linked.length
     ? await db.from("profiles").select("expo_push_token, loud_override").in("id", linked)
@@ -84,13 +89,14 @@ export async function notifyGuardians(journeyId: string, state: ProtocolState, t
   } else {
     await sendPush(withTok.map((p: any) => p.expo_push_token) as string[], title, body, { journeyId, state });
   }
+  await webPush;
   // I10: each guardian gets their own link (token carries their contactId) so the
   // ordinary status link can also show the Safe / Not safe vote card when a cancel
   // request is open. One email per recipient — a shared link cannot name a contact.
   for (const c of targets) {
     if (!c.email) continue;
     const link = `${process.env.APP_BASE_URL}/g/${signGuardianToken(journeyId, c.id)}`;
-    await sendEmail([c.email], title, `<p>${body}</p><p>${j.from_label} → ${j.to_label}</p><p><a href="${link}">Open live status</a></p>`);
+    await sendEmail([c.email], title, `<p>${body}</p><p>${escapeHtml(j.from_label)} → ${escapeHtml(j.to_label)}</p><p><a href="${link}">Open live status</a></p>`);
   }
   for (const c of targets)
     await db.from("alerts").insert({ journey_id: journeyId, recipient: c.id, channel: c.linked_user_id ? "push" : "email", state });

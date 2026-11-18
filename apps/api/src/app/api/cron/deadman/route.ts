@@ -2,10 +2,15 @@ import { heartbeatVerdict } from "@vaira/core";
 import { isCron } from "@/lib/auth";
 import { admin } from "@/lib/supabaseAdmin";
 import { applyEvent } from "@/lib/journeyState";
+import { cancelRetryTick } from "@/lib/cancelRetry";
+import { photoRetentionTick } from "@/lib/photoRetention";
+import { endRotationTick } from "@/lib/guardianEnd";
 import { ALARM_EXPIRY_MS, expireSilentAlarm, maybeBatteryPush } from "@/lib/monitoring";
 
 // R47c: only an alarm state expires on silence; SAFE→CRITICAL is the verdict path.
 const EXPIRE_STATES = new Set(["EMERGENCY", "CRITICAL"]);
+// The tick sends sequentially; a run cut off mid-send is what loses or repeats alerts.
+export const maxDuration = 60;
 
 // Dead-man watchdog (Task 13). Scheduled by Supabase pg_cron every 30 s (Vercel
 // Hobby crons run at most once/day, amendment 13). For each monitoring journey it
@@ -14,7 +19,8 @@ const EXPIRE_STATES = new Set(["EMERGENCY", "CRITICAL"]);
 // a still-SAFE journey → SENSOR_LOST once.
 export async function GET(req: Request) {
   if (!isCron(req)) return new Response("unauthorized", { status: 401 });
-  const { data } = await admin().rpc("monitoring_snapshot");
+  const { data, error: snapshotError } = await admin().rpc("monitoring_snapshot");
+  if (snapshotError) console.error("[deadman] monitoring_snapshot failed", snapshotError.message);
   const now = Date.now();
   let escalated = 0;
   let expired = 0;
@@ -32,8 +38,12 @@ export async function GET(req: Request) {
       const stAt = new Date(r.state_changed_at).getTime();
       const lastSignal = Math.max(hbAt ?? 0, frAt ?? 0, stAt);
       if (now - lastSignal >= ALARM_EXPIRY_MS) {
-        await expireSilentAlarm(r.journey_id, lastSignal || null, now);
-        expired++;
+        // One journey's failure must not cost the others their watchdog; next tick retries it.
+        try {
+          if (await expireSilentAlarm(r.journey_id, lastSignal || null, now)) expired++;
+        } catch (e) {
+          console.error("[deadman] expiry failed", r.journey_id, (e as Error)?.message);
+        }
         continue; // an expired journey is neither escalated nor battery-nudged
       }
     }
@@ -49,8 +59,15 @@ export async function GET(req: Request) {
       escalated++;
     }
   }
-  console.log("[deadman] checked", (data ?? []).length, "escalated", escalated, "expired", expired);
-  return Response.json({ checked: (data ?? []).length, escalated, expired });
+  // Fix AD round 2: the guardian-cancel retry clock. Its failure must never cost the
+  // watchdog above its response.
+  const cancel = await cancelRetryTick(now).catch((e) => { console.error("[deadman] cancel tick failed", (e as Error)?.message ?? e); return { resent: 0, cycled: 0, failed: true }; });
+  // Fix lane D7: with 4+ guardians, the emergency-word end link moves through the groups.
+  const endRotation = await endRotationTick(now).catch((e) => { console.error("[deadman] end rotation failed", (e as Error)?.message ?? e); return { alerted: 0, failed: true }; });
+  // Fix lane D6: 30-day photo deletion, last, so it never delays the watchdog above.
+  const photos = await photoRetentionTick(now).catch((e) => { console.error("[deadman] photo retention failed", (e as Error)?.message ?? e); return { listed: 0, deleted: 0, failed: 1 }; });
+  console.log("[deadman] checked", (data ?? []).length, "escalated", escalated, "expired", expired, "cancel", cancel, "endRotation", endRotation, "photos", photos);
+  return Response.json({ checked: (data ?? []).length, escalated, expired, cancel, endRotation, photos });
 }
 
 // pg_cron/pg_net call this with net.http_post (migration 0006/0011); Vercel cron would use GET.

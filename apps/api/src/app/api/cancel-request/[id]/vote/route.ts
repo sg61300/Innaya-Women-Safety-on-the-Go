@@ -3,7 +3,7 @@ import { applyEvent } from "@/lib/journeyState";
 import { logEvent } from "@/lib/events";
 import { sendEmail, escapeHtml } from "@/lib/alerts";
 import { verifyCancelVoteToken } from "@/lib/token";
-import { cancelVerdict, type AlarmMode, type ProtocolEvent } from "@vaira/core";
+import { cancelSafeOpen, cancelVerdict, type AlarmMode, type ProtocolEvent } from "@vaira/core";
 
 // ADR-043 step 7: a guardian votes Safe / Not safe on an open cancel request. No
 // session — the per-guardian signed vote token (from the /g/ cancel link) carries
@@ -38,11 +38,45 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const db = admin();
     const { data: r } = await db
       .from("cancel_requests")
-      .select("id, journey_id, owner_id, asked_contact_ids, method, verdict, resolved_at")
+      .select("id, journey_id, owner_id, asked_contact_ids, method, verdict, resolved_at, created_at")
       .eq("id", id)
       .single();
     if (!r) return new Response("not found", { status: 404 });
     if (!(r.asked_contact_ids as string[]).includes(tok.contactId)) return new Response("forbidden", { status: 403 });
+
+    // Fix AD round 2 (founder Q99, Q100): a Safe counts only inside the group's window
+    // + 5 min, dropped groups included, and never on a request closed without a cancel
+    // (keep verdict, her own SOS). "Not safe" stays accepted on an open row. On a closed
+    // row it is refused and nothing changes, with one exception, today's overturn: the row
+    // a Safe was given on still takes Not safe, so 2 of them can re-raise (ADR-043).
+    const closedNoCancel = !!r.resolved_at && r.verdict !== "cancel";
+    let refused = safe && (closedNoCancel || !cancelSafeOpen(new Date(r.created_at as string).getTime(), Date.now()));
+    // F9 (founder "Yes, same as Safe"): a guardian END closes the row as 'cancel' with NO Safe vote
+    // (migration 0036, distress claim). It stands in for the Safe that cancelled, so two "Not safe"
+    // overturn it exactly as they overturn a Safe. Detected by its own audit event, tied to this row.
+    let endedByGuardian = false;
+    if (!safe && r.resolved_at) {
+      const { data: safeHere } = r.verdict === "cancel"
+        ? await db.from("cancel_votes").select("safe").eq("request_id", id).eq("safe", true).limit(1)
+        : { data: null };
+      if (r.verdict === "cancel") {
+        const { data: endEvents } = await db.from("events").select("payload").eq("journey_id", r.journey_id).eq("type", "guardian_ended_alarm");
+        endedByGuardian = ((endEvents ?? []) as { payload?: { requestId?: string } }[]).some((e) => e.payload?.requestId === id);
+      }
+      refused = !safeHere?.length && !endedByGuardian;
+      // A later alarm's closed request (emergency word, keep) is not overturned by an old row.
+      if (!refused) {
+        const { data: newest } = await db.from("cancel_requests").select("verdict").eq("journey_id", r.journey_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+        refused = newest?.verdict !== "cancel";
+      }
+    }
+    const refuse = async () => {
+      await logEvent({ journeyId: r.journey_id, type: "cancel_vote_refused", payload: { requestId: id, contactId: tok.contactId, safe } });
+      if ((req.headers.get("accept") ?? "").includes("text/html"))
+        return new Response(`<!doctype html><meta charset="utf-8"><title>Closed</title><body style="font:16px system-ui;padding:2rem"><p>This request has closed. The alarm was not changed.</p></body>`, { status: 410, headers: { "content-type": "text/html; charset=utf-8" } });
+      return Response.json({ verdict: "refused", state: null }, { status: 410 });
+    };
+    if (refused) return await refuse();
 
     // Idempotent write: unique(request_id, contact_id) means a re-vote is ignored,
     // so the first recorded answer stands.
@@ -55,7 +89,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       .select("safe, created_at")
       .eq("request_id", id)
       .order("created_at", { ascending: true });
-    const votes = (voteRows ?? []).map((v: any) => ({ safe: v.safe as boolean }));
+    const recorded = (voteRows ?? []).map((v: any) => ({ safe: v.safe as boolean }));
+    // F9: the guardian END is the Safe that already cancelled, so it leads the vote list and two
+    // "Not safe" compute to reraise just as they do after a real Safe vote.
+    const votes = endedByGuardian ? [{ safe: true }, ...recorded] : recorded;
     const verdict = cancelVerdict(votes, (r.asked_contact_ids as string[]).length);
 
     // A no-JS guardian form posts urlencoded and expects HTML back; an API caller
@@ -90,21 +127,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return respond((cur?.state as string) ?? null);
     }
 
-    const { data: j } = await db.from("journeys").select("alarm_mode").eq("id", r.journey_id).single();
-    const alarmMode = ((j?.alarm_mode as AlarmMode) ?? "siren");
-
-    const ev: ProtocolEvent =
-      verdict === "cancel" ? { type: "GUARDIAN_VOTE", safe: true, contactId: tok.contactId }
-      : verdict === "keep" ? { type: "GUARDIAN_SAYS_WRONG" }
-      : verdict === "reraise" ? { type: "SOS", mode: alarmMode }
-      : { type: "GUARDIAN_VOTE", safe: false, contactId: tok.contactId }; // pending: log the vote, no state change
-    const applied = await applyEvent(r.journey_id, ev, "trustee");
-
-    const resolved = verdict !== "pending";
-    await db.from("cancel_requests").update({ verdict, resolved_at: resolved ? new Date().toISOString() : null }).eq("id", id);
-    await db.from("alerts").insert({ journey_id: r.journey_id, recipient: tok.contactId, channel: "admin", state: applied.state });
-
+    // Fix lane F1 (founder 2026-11-12): the Safe closes the row AND turns the alarm off in ONE
+    // database step (0036). The core reads cancelWaiting from the still-open row and yields
+    // RESOLVED_MONITORING + heightened; applyEvent writes both atomically. A row an emergency word
+    // or a keep closed first is not claimable, so a late Safe cannot override it (decision 4).
     if (verdict === "cancel") {
+      const applied = await applyEvent(
+        r.journey_id,
+        { type: "GUARDIAN_VOTE", safe: true, contactId: tok.contactId },
+        "trustee",
+        undefined,
+        { atomicClaim: { requestId: id, claimMode: "open", closeSiblings: true } },
+      );
+      if (applied.claimed !== true) {
+        // Another guardian's same Safe got there first (idempotent success), or the row closed
+        // under us (refuse) — exactly the two outcomes of the old claim-then-apply order.
+        const { data: now } = await db.from("cancel_requests").select("verdict").eq("id", id).single();
+        if (now?.verdict !== "cancel") return await refuse();
+        const { data: cur } = await db.from("journey_state").select("state").eq("journey_id", r.journey_id).order("changed_at", { ascending: false }).limit(1).maybeSingle();
+        return respond((cur?.state as string) ?? null);
+      }
+      await db.from("alerts").insert({ journey_id: r.journey_id, recipient: tok.contactId, channel: "admin", state: applied.state });
       const { data: c } = await db.from("contacts").select("name").eq("id", tok.contactId).single();
       const name = (c?.name as string | undefined)?.trim() || "a guardian";
       await logEvent({ journeyId: r.journey_id, type: "cancel_guardian_approved", payload: { requestId: id, guardianContactId: tok.contactId, method: r.method as string } });
@@ -115,9 +158,49 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const emails = (cs ?? []).map((x: any) => x.email).filter(Boolean) as string[];
         if (emails.length) await sendEmail(emails, "Alarm cancelled", `<p>The alarm was cancelled by ${escapeHtml(name)}. Monitoring continues.</p>`);
       }
-    } else {
-      await logEvent({ journeyId: r.journey_id, type: "cancel_vote", payload: { requestId: id, contactId: tok.contactId, safe, verdict } });
+      return respond(applied.state);
     }
+
+    const { data: j } = await db.from("journeys").select("alarm_mode").eq("id", r.journey_id).single();
+    const alarmMode = ((j?.alarm_mode as AlarmMode) ?? "siren");
+
+    // verdict === "cancel" is handled by the atomic branch above and has already returned.
+    const ev: ProtocolEvent =
+      verdict === "keep" ? { type: "GUARDIAN_SAYS_WRONG" }
+      : verdict === "reraise" ? { type: "SOS", mode: alarmMode }
+      : { type: "GUARDIAN_VOTE", safe: false, contactId: tok.contactId }; // pending: log the vote, no state change
+    const resolved = verdict !== "pending";
+    // The row is claimed BEFORE the state moves: an emergency word or a keep that closed it while
+    // this vote was on its way wins, in the row and in the state. Only a row a Safe closed may
+    // take the overturn. Pending never touches resolved_at and only marks a row still open.
+    const before = { verdict: r.verdict ?? null, resolved_at: r.resolved_at ?? null };
+    if (resolved) {
+      const claim = db.from("cancel_requests").update({ verdict, resolved_at: new Date().toISOString() }).eq("id", id);
+      const { data: claimed } = await (verdict === "reraise" && r.resolved_at ? claim.eq("verdict", "cancel") : claim.is("resolved_at", null)).select("id");
+      if (!claimed?.length) {
+        const { data: now } = await db.from("cancel_requests").select("verdict").eq("id", id).single();
+        if (now?.verdict !== verdict) return await refuse();
+        const { data: cur } = await db.from("journey_state").select("state").eq("journey_id", r.journey_id).order("changed_at", { ascending: false }).limit(1).maybeSingle();
+        return respond((cur?.state as string) ?? null); // another guardian's same answer got there first
+      }
+    } else await db.from("cancel_requests").update({ verdict }).eq("id", id).is("resolved_at", null);
+    let applied: Awaited<ReturnType<typeof applyEvent>>;
+    try {
+      applied = await applyEvent(r.journey_id, ev, "trustee");
+    } catch (e) {
+      // The state did not move: the claim goes back, or a retry would stop at "already decided".
+      if (resolved) await db.from("cancel_requests").update(before).eq("id", id).eq("verdict", verdict);
+      throw e;
+    }
+    // Her phone reads the newest row, which may be a later cycle closed with this Safe.
+    if (verdict === "reraise") await db.from("cancel_requests").update({ verdict }).eq("journey_id", r.journey_id).eq("verdict", "cancel").gte("created_at", r.created_at);
+    // A decision closes every cycle of this journey, so no resend or dropped-group link
+    // outlives it and her phone sees the verdict on whichever row is newest.
+    if (resolved) await db.from("cancel_requests").update({ verdict, resolved_at: new Date().toISOString() }).eq("journey_id", r.journey_id).is("resolved_at", null);
+    await db.from("alerts").insert({ journey_id: r.journey_id, recipient: tok.contactId, channel: "admin", state: applied.state });
+
+    // Only keep / reraise / pending reach here (cancel returned in the atomic branch above).
+    await logEvent({ journeyId: r.journey_id, type: "cancel_vote", payload: { requestId: id, contactId: tok.contactId, safe, verdict } });
 
     return respond(applied.state);
   } catch (e) {

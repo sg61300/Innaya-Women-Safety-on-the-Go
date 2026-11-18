@@ -7,7 +7,7 @@ import { useSession } from "../store/session";
 // Continue starts the journey. Isolated in its own file so the submit()'s trailing
 // async never overlaps another test's render (see journeyNewScreen.test.tsx).
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn() }), useNavigation: () => ({ addListener: () => () => {}, dispatch: jest.fn() }) }));
 
 jest.mock("expo-camera", () => {
   const React2 = require("react");
@@ -68,7 +68,9 @@ jest.mock("../lib/supabase", () => ({
   supabase: {
     auth: { getSession: jest.fn().mockResolvedValue({ data: { session: { access_token: "tok" } } }) },
     from: (t: string) =>
-      t === "blacklisted_vehicles"
+      t === "contacts"
+        ? { select: () => ({ eq: () => Promise.resolve({ data: [{ email: "a-guardian-email" }], error: null }) }) }
+        : t === "blacklisted_vehicles"
         ? { select: () => ({ eq: () => ({ maybeSingle: jest.fn().mockResolvedValue({ data: null }) }) }) }
         : { select: () => ({ eq: () => ({ single: mockSingle }) }) },
     rpc: jest.fn().mockResolvedValue({ data: [] }),

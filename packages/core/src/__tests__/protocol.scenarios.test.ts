@@ -111,10 +111,10 @@ const TABLE: Row[] = [
     events: [
       { type: "CANCEL_STEP1_OK" },                             // app password ok, stays CRITICAL
       { type: "CANCEL_STEP2_OK" },                             // journey word ok, stays CRITICAL
-      { type: "CANCEL_REQUESTED", method: "word" },            // guardian request opens → CANCEL_HOLD
+      { type: "CANCEL_REQUESTED", method: "word" },            // guardian request opens, stays CRITICAL (Fix AD round 2)
       { type: "GUARDIAN_VOTE", safe: true, contactId: "c1" },  // first Safe cancels → RESOLVED_MONITORING heightened
     ],
-    seq: ["CRITICAL", "CRITICAL", "CANCEL_HOLD", "RESOLVED_MONITORING"],
+    seq: ["CRITICAL", "CRITICAL", "CRITICAL", "RESOLVED_MONITORING"],
   },
   {
     title: "battery-low sensor loss → AMBER (not CRITICAL); non-battery loss → CRITICAL",
@@ -165,7 +165,7 @@ describe("journey scenario table — side-effect + flag assertions", () => {
 
   it("cancel flow keeps the siren held (not off) while the guardian request is open, then off on approval", () => {
     const hold = transition(at("CRITICAL"), { type: "CANCEL_REQUESTED", method: "word" });
-    expect(hold.ctx.state).toBe("CANCEL_HOLD");
+    expect(hold.ctx.state).toBe("CRITICAL");
     expect(hold.actions).toContain("SIREN_HOLD");
     expect(hold.actions).not.toContain("SIREN_OFF");
     const confirmed = transition(hold.ctx, { type: "GUARDIAN_VOTE", safe: true, contactId: "c1" });

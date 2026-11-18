@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 import { Spectral, Work_Sans } from "next/font/google";
 import "./home.css";
 import { WaitlistCampaign } from "./_home/WaitlistCampaign";
@@ -85,10 +84,6 @@ const FAQ: { q: string; a: string }[] = [
 
 // Inline lucide-style line icons for the app tab bar (real icons, not placeholders).
 
-// Desktop layout (>= 1024px): the "ab1" combination is the default (founder
-// 2026-10-12) — a left copy rail + a centred visual zone for the hero and journey,
-// every text section centred at a comfortable reading width, inside a fluid content
-// box that never goes edge-to-edge. Below 1024px is unchanged. See home.css.
 export default function HomePage() {
   return (
     <div className={`vhome ${spectral.variable} ${workSans.variable}`}>
@@ -128,121 +123,85 @@ export default function HomePage() {
                 The live app leads the very next section, so the hero loses no app
                 narrative (arrangement chosen over keeping the phone here, s28 C2). */}
             <div className="hero-emblem" role="img" aria-label="The INNAYA emblem: a woman, protected.">
-              {/* The rose-gold logo walk with NO background (s33c, founder: "just have
-                  logo woman and stars ... without the box background"). The mp4 is
-                  "stacked alpha": top = colour, then a black gap, bottom = transparency mask, so
-                  one ordinary H.264 file works on every browser incl. iPhone (no VP9/HEVC
-                  alpha needed). CampaignMotion draws it onto the canvas with WebGL, only
-                  while on screen. The still (first frame, transparent) shows before the
-                  first frame is drawn, and is all that shows with reduced motion, no JS
-                  or no WebGL (the video src is then never set, so it never downloads). */}
-              <div className="logo-stack">
-                <img className="logo-still" src="/campaign/logo-walk-still.webp" width={640} height={640} alt="" />
-                <canvas className="logo-canvas" data-logo-canvas width={640} height={640} aria-hidden />
-                <video
-                  className="logo-src"
-                  data-logo-src="/campaign/logo-walk-stacked.mp4"
-                  muted
-                  loop
-                  playsInline
-                  preload="none"
-                  aria-hidden
-                />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/campaign/emblem-rosegold-alpha-1024.png" alt="" width={380} height={380} aria-hidden />
             </div>
           </div>
         </div>
       </header>
 
-      {/* CHAPTER 01 — the journey, as a short phone film (s33). A pre-rendered 3D film
-          (public/campaign/innaya-film-s33.mp4) turns the phone through five real app
-          screens: Home (auto-scrolls to Plan my journey), the journey form, the safety
-          check-in, help being called, and the guardian's phone receiving the alert.
-          Plays on view, pauses off view (CampaignMotion data-play-on-view). Reduced
-          motion / no-JS: the poster plus the five-step caption list, and the mp4 is never
-          downloaded. The five caption lines live ONLY here (one-place change). */}
-      <section className="sec dark film-sec" aria-label="How it feels to be looked after, a short film">
-        <div className="wrap film-wrap">
-          <div className="film-head">
-            <span className="chapno" aria-hidden>01</span>
-            <p className="eyebrow">One journey</p>
-            <h2 className="sec-title">How it feels to be <em>looked after.</em></h2>
+      {/* CHAPTER 01 — the journey, pinned and scrubbed */}
+      <section className="sec dark seq app-seq" aria-label="How it feels to be looked after">
+        <div className="seq-pin">
+          <div className="wrap stage-grid">
+            <div className="stage-copy">
+              <span className="chapno" aria-hidden>01</span>
+              <p className="eyebrow">One journey</p>
+              <h2 className="sec-title">How it feels to be <em>looked after.</em></h2>
+              {/* desktop (>= 981px): a persistent four-step list, the active step lit */}
+              <ol className="beats" aria-label="One journey, four steps">
+                <li className="beat" data-beat="0" aria-current="step"><span className="n">01</span><h3>You start your journey.</h3><p>Open the app, tell it where you&apos;re going. That&apos;s it.</p></li>
+                <li className="beat" data-beat="1"><span className="n">02</span><h3>It looks after you.</h3><p>If something feels wrong, help is called on its own. You don&apos;t have to do anything.</p></li>
+                <li className="beat" data-beat="2"><span className="n">03</span><h3>Your people are told.</h3><p>The ones you trust see you&apos;re safe, or that you need them, straight away. And there&apos;s a loud siren if it&apos;s needed.</p></li>
+                <li className="beat" data-beat="3"><span className="n">04</span><h3>Reached safely.</h3><p>Your people have been told.</p></li>
+              </ol>
+            </div>
+            <div className="stage-object">
+              <Phone id="phone-stage" label="The INNAYA app through one journey: where you are headed, being looked after on the way, your people told, reached safely." />
+              <div className="seq-counter" aria-hidden><span className="cur">01</span> / 04</div>
+            </div>
           </div>
-          <div className="film-stage">
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-            <video
-              id="campaign-film"
-              className="film-video"
-              muted
-              playsInline
-              preload="none"
-              poster="/campaign/innaya-film-s33-poster.webp"
-              data-play-on-view
-              data-src="/campaign/innaya-film-s33.mp4"
-              aria-label="A short film of the INNAYA app through one journey: the home screen, planning a journey, a safety check-in, help being called, and the guardian's phone receiving the alert with the location."
-            />
+
+          {/* phone (<= 980px): a self-advancing snap carousel, one card per beat,
+              each card carrying its own phone pane. Autoplay stops on any touch. */}
+          <div className="wrap beats-mobile">
+            <ol className="beats-carousel pre" aria-label="One journey, four steps">
+              <li className="vcard" data-beat="0">
+                <div className="vcard-copy"><span className="n">01</span><h3>You start your journey.</h3><p>Open the app, tell it where you&apos;re going. That&apos;s it.</p></div>
+                <div className="vcard-phone"><Phone id="cphone-0" only={0} label="Start your journey: tell the app where you are headed." /></div>
+              </li>
+              <li className="vcard" data-beat="1">
+                <div className="vcard-copy"><span className="n">02</span><h3>It looks after you.</h3><p>If something feels wrong, help is called on its own. You don&apos;t have to do anything.</p></div>
+                <div className="vcard-phone"><Phone id="cphone-1" only={1} label="On your way: INNAYA is looking after you." /></div>
+              </li>
+              <li className="vcard" data-beat="2">
+                <div className="vcard-copy"><span className="n">03</span><h3>Your people are told.</h3><p>The ones you trust see you&apos;re safe, or that you need them, straight away. And there&apos;s a loud siren if it&apos;s needed.</p></div>
+                <div className="vcard-phone"><Phone id="cphone-2" only={2} label="Your people are told: the ones you trust are notified." /></div>
+              </li>
+              <li className="vcard" data-beat="3">
+                <div className="vcard-copy"><span className="n">04</span><h3>Reached safely.</h3><p>Your people have been told.</p></div>
+                <div className="vcard-phone"><Phone id="cphone-3" only={3} label="Reached safely: your people have been told." /></div>
+              </li>
+            </ol>
+            <div className="carousel-dots" role="tablist" aria-label="Journey step">
+              <button className="cdot" type="button" aria-selected="true" aria-label="Step 1"><span className="fill" aria-hidden /></button>
+              <button className="cdot" type="button" aria-selected="false" aria-label="Step 2"><span className="fill" aria-hidden /></button>
+              <button className="cdot" type="button" aria-selected="false" aria-label="Step 3"><span className="fill" aria-hidden /></button>
+              <button className="cdot" type="button" aria-selected="false" aria-label="Step 4"><span className="fill" aria-hidden /></button>
+            </div>
           </div>
-          {/* The five headlines, the single source for both the film captions and the
-              no-JS / reduced-motion step list. CampaignMotion adds .film-synced and shows
-              one at a time, in step with the film. */}
-          <ol className="film-caps">
-            <li className="film-cap on"><span className="num" aria-hidden>01 / 05</span><h3>Start your journey, never alone</h3></li>
-            <li className="film-cap"><span className="num" aria-hidden>02 / 05</span><h3>It stays beside you until you arrive</h3></li>
-            <li className="film-cap"><span className="num" aria-hidden>03 / 05</span><h3>If something changes, it checks on you</h3></li>
-            <li className="film-cap"><span className="num" aria-hidden>04 / 05</span><h3>If you can&apos;t answer, or in an emergency, it acts for you</h3></li>
-            <li className="film-cap"><span className="num" aria-hidden>05 / 05</span><h3>The people you chose know at once</h3></li>
-          </ol>
-          {/* No-JS: expand the reserved single-caption slot to the full readable 5-step list
-              (the film is poster-only without JS). JS-on users never see this style. */}
-          <noscript>
-            <style>{".vhome .film-caps{position:static;width:auto;min-height:0}.vhome .film-cap{position:static;opacity:1;transform:none;transition:none;margin:0 0 12px}"}</style>
-          </noscript>
-          {/* Replay button (founder round 2, reusing the s31 preview look/behaviour). Hidden
-              until the film ends, then CampaignMotion shows it; a click restarts the film and
-              the caption sync from 0. Keyboard-reachable only while shown (visibility toggles
-              it out of the tab order when hidden). Reduced motion: shows "Play" from the start; the film downloads only on tap (s33e). */}
-          <button className="film-replay" id="film-replay" type="button">Replay</button>
         </div>
       </section>
 
       {/* CHAPTER 02 — the people who worry, joined by the light */}
       <section className="sec dark people" aria-label="For the people who worry">
         <div className="wrap">
-          {/* s33d: heading + paragraph as ONE left rail beside the carousel on wide screens */}
-          <div className="people-rail">
-            <div className="sec-head">
-              <span className="chapno" aria-hidden>02</span>
-              <p className="eyebrow">For the people who worry</p>
-              <h2 className="sec-title">The ones who wait up <em>can rest now.</em></h2>
-            </div>
-            {/* s33d founder: paragraph "on left side of section 2 where carousel is present" (laptop) and
-                "Above the carousel" (phones), white serif at body size. */}
-            <p className="people-body reveal d1">No more waiting for the &ldquo;reached home&rdquo; text. The people she trusts are reached straight away if she needs them. No app to learn, just a simple way to know she&apos;s okay. If you love someone who travels alone, this is for you too.</p>
+          <div className="sec-head">
+            <span className="chapno" aria-hidden>02</span>
+            <p className="eyebrow">For the people who worry</p>
+            <h2 className="sec-title">The ones who wait up <em>can rest now.</em></h2>
           </div>
-          {/* CYLINDER CAROUSEL (s32, founder 2026-10-12). The two phones sit on a cylinder:
-              her phone front, the guardian view behind. .people-pin is the pin track (both
-              laptop and mobile, with JS motion): the section HOLDS while the first downward
-              scroll turns the back phone to the front (her -> guardian). After that the
-              visitor turns the cylinder themselves with a horizontal mouse swipe/drag,
-              the arrow keys, a trackpad/wheel, or a touch swipe. Driven in CampaignMotion
-              (--rot). No-JS / reduced motion flattens it to both phones in flow (home.css). */}
-          <div className="people-pin">
-            <div className="people-stage reveal">
-              <div className="glow" aria-hidden />
-              <div className="phones" id="peopleCyl" role="group" aria-roledescription="carousel"
-                   aria-label="Her phone and the guardian view. Scroll, swipe, or use the arrow keys to turn from one to the other.">
-                <div className="pcyl-slot" data-ph="her">
-                  <Phone id="phone-her" only={0} label="Her INNAYA home screen: on standby, one guardian watching, ready to set off." />
-                </div>
-                <svg className="thread" viewBox="0 0 420 200" preserveAspectRatio="none" aria-hidden>
-                  <path d="M0 100 C 120 40, 300 160, 420 100" pathLength={1} />
-                </svg>
-                <div className="pcyl-slot" data-ph="guardian">
-                  <Phone id="phone-guardian" view="guardian" label="The guardian view: Aarohi is on her way home, live, safe." />
-                </div>
-              </div>
+          <div className="people-stage reveal">
+            <div className="glow" aria-hidden />
+            <div className="phones">
+              <Phone id="phone-her" label="Her INNAYA app: on her way home, live and safe." />
+              <svg className="thread" viewBox="0 0 420 200" preserveAspectRatio="none" aria-hidden>
+                <path d="M0 100 C 120 40, 300 160, 420 100" pathLength={1} />
+              </svg>
+              <Phone id="phone-guardian" view="guardian" sos={false} label="The guardian view: Rhea is on her way home, live, safe." />
             </div>
           </div>
+          <p className="people-body reveal d1">No more waiting for the &ldquo;reached home&rdquo; text. The people she trusts are reached straight away if she needs them. No app to learn, just a simple way to know she&apos;s okay. If you love someone who travels alone, this is for you too.</p>
         </div>
       </section>
 
@@ -257,49 +216,16 @@ export default function HomePage() {
             <p className="eyebrow">And later</p>
             <h2 className="sec-title">It won&apos;t look like <em>a safety gadget.</em></h2>
           </div>
-          {/* Founder-approved swipe (s31 v3): the three pieces on a native scroll-snap
-              strip, one in front in true colour, neighbours turned and receding, soft
-              faded sides. Driven by scroll (swipe / trackpad / drag / arrow keys),
-              enhanced in CampaignMotion; reduced-motion flattens it (home.css). */}
-          <div className="jewel-strip" id="jewelStrip" tabIndex={0} role="region" aria-roledescription="gallery"
-               aria-label="INNAYA pieces in satin rose-gold, each with a small blue stone. Swipe or use the arrow keys to see each one.">
-            <div className="jewel-track">
-              <div className="jewel-slide"><div className="jewel-piece" style={{ "--maskimg": "url(/campaign/jewellery/locket-pebble-3d.webp)" } as CSSProperties}>
-                <div className="floor" aria-hidden />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/campaign/jewellery/locket-pebble-3d.webp" alt="A small rounded-rectangle INNAYA locket on a fine chain, with a blue stone." width={680} height={760} loading="lazy" />
-                <div className="sheen" aria-hidden /></div></div>
-              <div className="jewel-slide"><div className="jewel-piece" style={{ "--maskimg": "url(/campaign/jewellery/locket-halo-oval-3d.webp)" } as CSSProperties}>
-                <div className="floor" aria-hidden />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/campaign/jewellery/locket-halo-oval-3d.webp" alt="The oval INNAYA locket on a fine chain, a blue stone set in a ring of fine slots." width={680} height={760} loading="lazy" />
-                <div className="sheen" aria-hidden /></div></div>
-              <div className="jewel-slide"><div className="jewel-piece" style={{ "--maskimg": "url(/campaign/jewellery/pin-teardrop-3d.webp)" } as CSSProperties}>
-                <div className="floor" aria-hidden />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/campaign/jewellery/pin-teardrop-3d.webp" alt="A teardrop INNAYA brooch with a blue stone." width={680} height={760} loading="lazy" />
-                <div className="sheen" aria-hidden /></div></div>
-            </div>
+          <div className="jewel-hero reveal">
+            <div className="glow" aria-hidden />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/campaign/jewellery/locket-halo-oval.webp" alt="The INNAYA locket in satin rose-gold: an oval pendant on a fine chain, with a small blue stone at its centre." width={1254} height={1254} loading="lazy" />
           </div>
           <p className="lede jewel-line reveal d1">Discreet jewellery is coming: a locket, a brooch, a kada, a patch. Beautiful enough to wear every day, quietly looking after you. Nothing anyone else would notice. Join the waitlist for the first look.</p>
           <div className="jewel-worn reveal d1">
             <figure>
-              {/* Kada video (founder OK 2026-10-12; placed s33c "Replace the kada still"). Original
-                  pixels (founder s33c chose the original over a cream-lifted version that haloed
-                  the arm edge); only colour tags added. Plays only while on screen (CampaignMotion); reduced
-                  motion keeps the poster (first frame) and never downloads the video. */}
-              <video
-                data-play-on-view
-                data-src="/campaign/jewellery/kada-wrist.mp4"
-                poster="/campaign/jewellery/kada-wrist-poster.webp"
-                width={640}
-                height={640}
-                muted
-                loop
-                playsInline
-                preload="none"
-                aria-label="The INNAYA kada worn on a wrist: a smooth rose-gold cuff with a small blue stone, sitting like everyday jewellery."
-              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/campaign/jewellery/kada-wrist.webp" alt="The INNAYA kada worn on a wrist: a smooth rose-gold cuff with a small blue stone, sitting like everyday jewellery." width={1254} height={1254} loading="lazy" />
             </figure>
             <div className="jewel-copy">
               <div className="rule-dot" aria-hidden />

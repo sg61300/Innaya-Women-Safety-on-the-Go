@@ -14,8 +14,11 @@ export type IllustrationName =
   | "tool-pepper-spray" | "tool-personal-alarm" | "tool-whistle" | "tool-safety-phone"
   | "class-selfdefence" | "class-map-pin"
   | "simulate-drill" | "simulate-golive" | "simulate-videocall"
+  | "simulate-videocall-left" | "simulate-videocall-right"
   | "regions-empty" | "journey-plan" | "consent-disclaimer"
-  | "guardians" | "vitals";
+  | "guardians" | "vitals" | "jewellery-pendant" | "status-medallion"
+  | "tab-home" | "tab-regions" | "tab-simulate" | "tab-profile"
+  | "tab-trustees" | "tab-live" | "tab-vitals";
 
 export function Illustration({ name, size = 72, style, testID }: { name: IllustrationName; size?: number; style?: StyleProp<ImageStyle>; testID?: string }) {
   const source = ILLUSTRATION_FILES[name] ?? emblem;

@@ -67,7 +67,8 @@ export default function AddReportScreen() {
 
   return (
     <Screen scroll padded topInset={false} testID="add-report-screen">
-      <Text variant="title" style={{ marginTop: 12, marginBottom: 12 }}>{i18n.t("regions.reportTitle")}</Text>
+      {/* Phase 3: plain title; the sole back control is the top-bar one. */}
+      <Text variant="title" accessibilityRole="header" style={{ marginTop: 12, marginBottom: 12 }}>{i18n.t("regions.reportTitle")}</Text>
 
       <Card>
         <Text variant="label" color="muted" style={{ marginBottom: 6 }}>{i18n.t("regions.reasonLabel")}</Text>

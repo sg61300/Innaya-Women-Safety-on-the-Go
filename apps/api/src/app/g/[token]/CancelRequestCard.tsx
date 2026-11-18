@@ -1,5 +1,7 @@
-// ADR-043 guardian cancel-request card. Server-rendered, no client JS: the two
-// votes are plain POST forms to /api/cancel-request/<id>/vote?t=<voteToken> (the
+import { SafeButton } from "./SafeButton";
+
+// ADR-043 guardian cancel-request card. Server-rendered, the only client JS greys Safe at its
+// deadline on a page left open: the two votes are plain POST forms to /api/cancel-request/<id>/vote?t=<voteToken> (the
 // route reads urlencoded form bodies and returns an HTML acknowledgement). There
 // is no "turn the siren on" control — a guardian cannot start the siren (founder
 // ruling), only say Safe / Not safe.
@@ -11,6 +13,9 @@ export function CancelRequestCard({
   resolved,
   verdict,
   readOnly = false,
+  safeClosed = false,
+  safeUntil,
+  closed = false,
 }: {
   requestId: string;
   method: "word" | "photo" | "video";
@@ -19,7 +24,16 @@ export function CancelRequestCard({
   resolved: boolean;
   verdict: string | null;
   readOnly?: boolean;
+  safeClosed?: boolean; // Fix AD round 2: past the group's window + 5 min, Safe is greyed
+  safeUntil?: number; // that moment, so an open page greys it without a refresh
+  closed?: boolean; // an expired link and this guardian is not being asked now
 }) {
+  if (closed)
+    return (
+      <section style={{ margin: 16, padding: 16, border: "2px solid #9ca3af", borderRadius: 12, background: "#fff" }}>
+        <p style={{ font: "600 15px system-ui", color: "#374151", margin: 0 }}>This request has closed.</p>
+      </section>
+    );
   const action = `/api/cancel-request/${requestId}/vote?t=${encodeURIComponent(voteToken)}`;
   return (
     <section style={{ margin: 16, padding: 16, border: "2px solid #b91c1c", borderRadius: 12, background: "#fff" }}>
@@ -44,9 +58,7 @@ export function CancelRequestCard({
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <form method="post" action={action} style={{ flex: 1, minWidth: 140 }}>
             <input type="hidden" name="safe" value="true" />
-            <button type="submit" style={{ width: "100%", padding: "14px", font: "700 16px system-ui", color: "#fff", background: "#065f46", border: 0, borderRadius: 8 }}>
-              Safe — cancel the alarm
-            </button>
+            <SafeButton closed={safeClosed} until={safeUntil} />
           </form>
           <form method="post" action={action} style={{ flex: 1, minWidth: 140 }}>
             <input type="hidden" name="safe" value="false" />

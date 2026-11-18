@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { Screen } from "../../../src/components/Screen";
-import { ProfileBack } from "../../../src/components/ProfileChrome";
 import { Text } from "../../../src/components/Text";
 import { Card } from "../../../src/components/Card";
 import { Chip } from "../../../src/components/Chip";
@@ -13,7 +12,7 @@ import i18n from "../../../src/i18n";
 const statusChipKind = (s: string): "critical" | "neutral" | "amber" => (s === "red" ? "critical" : s === "safe_by_police" ? "neutral" : "amber");
 
 // F12 (b16): every report the signed-in user has submitted, newest first. The
-// back control mirrors the region detail (ProfileBack + nested Stack), so
+// back control mirrors the region detail (BackHeader + nested Stack), so
 // hardware Back returns to the Regions list.
 export default function MyReportsScreen() {
   const [rows, setRows] = useState<MyReport[] | null>(null);
@@ -41,7 +40,8 @@ export default function MyReportsScreen() {
 
   return (
     <Screen scroll padded topInset={false} testID="my-reports-screen">
-      <ProfileBack title={i18n.t("regions.myReportsTitle")} />
+      {/* Phase 3: plain title; the sole back control is the top-bar one. */}
+      <Text variant="title" accessibilityRole="header">{i18n.t("regions.myReportsTitle")}</Text>
       {error ? (
         <Text testID="my-reports-error" variant="body" color="muted">{i18n.t("regions.error")}</Text>
       ) : rows == null ? (

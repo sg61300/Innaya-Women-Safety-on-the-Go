@@ -55,6 +55,16 @@ export const simulation = {
       timers.forEach(clearTimeout);
       unsub();
       await runner.stop();
+      // Drill-fix (Option A): stop() tears down side effects but leaves the journey
+      // store's ctx at its drill value (e.g. CRITICAL), so the full-screen
+      // EmergencyOverlay — which renders purely off ctx.state — would stay up after
+      // the window. reset() returns ctx to IDLE and clears the challenge so the
+      // alert/check-in screens unmount. Order matters: reset FIRST (practice still
+      // TRUE), then setPractice(false), so there is never a frame where the emergency
+      // UI is visible while practice is off (its cancel flow would otherwise bind to
+      // the REAL guardian deps). The drill only runs from IDLE (guard above) and
+      // never creates a journey, so reset clears drill state only.
+      useJourney.getState().reset();
       runner.setPractice(false);
       onDone(
         drillScore({

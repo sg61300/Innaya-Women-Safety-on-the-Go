@@ -29,5 +29,6 @@ test("Follow system resets the live palette to the system default", async () => 
   const r = await render(<ThemeProvider initial="darkCherry"><Probe /></ThemeProvider>);
   expect(r.getByTestId("probe").props.children).toBe("darkCherry");
   await act(async () => { fireEvent.press(r.getByText(i18n.t("appearance.followSystem"))); });
-  expect(r.getByTestId("probe").props.children).toBe("violetBloom");
+  // Founder ruling 2026-10-09: the system default is now the deep-plum `midnight`.
+  expect(r.getByTestId("probe").props.children).toBe("midnight");
 });

@@ -1,7 +1,8 @@
 jest.useFakeTimers();
 
 const mockPost = jest.fn().mockResolvedValue({ ok: true });
-jest.mock("../lib/api", () => ({ post: (...a: any[]) => mockPost(...a) }));
+const mockGet = jest.fn();
+jest.mock("../lib/api", () => ({ post: (...a: any[]) => mockPost(...a), get: (...a: any[]) => mockGet(...a) }));
 const mockLog = jest.fn().mockResolvedValue(undefined);
 const mockFlush = jest.fn().mockResolvedValue(undefined);
 jest.mock("../lib/events", () => ({ events: { log: (...a: any[]) => mockLog(...a), flush: () => mockFlush() } }));
@@ -101,4 +102,13 @@ test("trustees folds each contact's latest journey + state and defaults a missin
   expect(out[0]).toMatchObject({ name: "Asha", tier: "primary", journey: { id: "j-o1", state: "SAFE", from: "Home", to: "Work" } });
   expect(out[1]).toMatchObject({ name: "Trustee", tier: "buffer" });
   expect(out[1].journey).toBeUndefined();
+});
+
+// Fix lane D7 item 9: the in-app end action uses the guardian's own signed-in account.
+test("endStatus asks the guardian-end route for this journey; endAlarm posts the confirm", async () => {
+  mockGet.mockResolvedValueOnce({ end: "open" });
+  expect(await guardian.endStatus("j 1")).toEqual({ end: "open" });
+  expect(mockGet).toHaveBeenCalledWith("/api/guardian-end?journeyId=j%201");
+  await guardian.endAlarm("j 1");
+  expect(mockPost).toHaveBeenCalledWith("/api/guardian-end?journeyId=j%201", { confirm: "yes" });
 });

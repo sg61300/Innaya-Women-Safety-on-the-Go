@@ -24,7 +24,6 @@ const mockDeps = {
   verifyPassword: jest.fn().mockResolvedValue(true),
   verifyWord: jest.fn().mockResolvedValue(true),
   createRequest: jest.fn().mockResolvedValue({ askedCount: 3 }),
-  subscribeVerdict: jest.fn().mockReturnValue(() => {}),
   uploadMedia: jest.fn(),
 };
 jest.mock("../services/cancelFlowDeps", () => ({ makeCancelFlowDeps: () => mockDeps }));

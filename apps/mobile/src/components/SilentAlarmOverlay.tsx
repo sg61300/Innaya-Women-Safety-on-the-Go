@@ -18,7 +18,8 @@ export function SilentAlarmOverlay() {
   const ownerId = useJourney((s) => (s.journey?.owner_id as string | undefined) ?? undefined);
   const challengeOpen = useJourney((s) => s.challenge !== null);
 
-  const visible = !challengeOpen && alarmMode === "silent" && (rawState === "CRITICAL" || rawState === "CANCEL_HOLD");
+  const cancelWaiting = useJourney((s) => !!s.ctx.cancelWaiting || !!s.ctx.quietAlarm); // Fix AD round 2: screen stays normal
+  const visible = !challengeOpen && !cancelWaiting && alarmMode === "silent" && (rawState === "CRITICAL" || rawState === "CANCEL_HOLD");
   const [cancelOpen, setCancelOpen] = useState(false);
   const [guardianCount, setGuardianCount] = useState(0);
   const deps = useMemo(() => makeCancelFlowDeps(), [journeyId]);
@@ -43,7 +44,6 @@ export function SilentAlarmOverlay() {
         <CancelFlow
           hasJourney={!!journeyId}
           deps={deps}
-          onResolved={(v) => { if (v === "cancel") setCancelOpen(false); }}
         />
       ) : (
         <SilentAlarmScreen guardianCount={guardianCount} onNotEmergency={() => setCancelOpen(true)} />
