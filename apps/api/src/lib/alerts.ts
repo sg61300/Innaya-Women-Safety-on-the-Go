@@ -1,9 +1,10 @@
 import { admin } from "./supabaseAdmin";
 import { signGuardianToken } from "./token";
 import { logEvent } from "./events";
+import { notifyContactsWebPush } from "./webPush";
 import type { ProtocolState } from "@vaira/core";
 
-type MailTransport = { sendMail: (message: { from: string; to: string[]; subject: string; html: string }) => Promise<unknown> };
+type MailTransport = { sendMail: (message: { from: string; to: string[]; subject: string; html: string; text: string; replyTo: string; headers: Record<string, string> }) => Promise<unknown> };
 const nodemailer: { createTransport: (options: unknown) => MailTransport } = require("nodemailer");
 const GUARDIAN_SENDER = (process.env.GUARDIAN_SENDER ?? "support@example.com").trim().toLowerCase();
 
@@ -30,17 +31,42 @@ export async function sendPush(
   body: string,
   data: Record<string, unknown>,
   opts?: { channelId?: string; sound?: string },
-) {
-  if (!tokens.length) return;
+): Promise<boolean> {
+  if (!tokens.length) return true;
   const channelId = opts?.channelId ?? "vaira-alerts";
   const sound = opts?.sound ?? "default";
-  await fetch("https://exp.host/--/api/v2/push/send", {
+  const res = await fetch("https://exp.host/--/api/v2/push/send", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(
       tokens.map((to) => ({ to, title, body, data, priority: "high", channelId, sound })),
     ),
   });
+  // false = Expo refused the whole request. Callers that retry read this; others ignore it.
+  return res?.ok !== false;
+}
+
+// Plain-text fallback derived from the HTML body: keeps link URLs ("label (url)"), turns block
+// ends into line breaks, strips the remaining tags and decodes the five escaped characters. Every
+// multipart email should carry a text/plain part — HTML-only mail scores worse with spam filters
+// and is unreadable in text-only clients.
+export function htmlToText(html: string): string {
+  return String(html ?? "")
+    .replace(/<a\b[^>]*\bhref="([^"]*)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
+    .replace(/<\/(p|div|h[1-6]|li|tr)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]+/g, " ")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 export async function sendEmail(to: string[], subject: string, html: string) {
@@ -53,7 +79,19 @@ export async function sendEmail(to: string[], subject: string, html: string) {
     service: "gmail",
     auth: { user: GUARDIAN_SENDER, pass: password },
   });
-  await transport.sendMail({ from: `INNAYA <${GUARDIAN_SENDER}>`, to, subject, html });
+  // Free deliverability hygiene (founder "Free hygiene only"): a text/plain alternative, a
+  // Reply-To the guardian can reply straight to, and a List-Unsubscribe that is a mailto ONLY
+  // (founder "Unsubscribe = mail them" — handled by hand). No one-click unsubscribe, no
+  // List-Unsubscribe-Post, no endpoint that could switch these safety alerts off.
+  await transport.sendMail({
+    from: `INNAYA <${GUARDIAN_SENDER}>`,
+    to,
+    subject,
+    html,
+    text: htmlToText(html),
+    replyTo: GUARDIAN_SENDER,
+    headers: { "List-Unsubscribe": `<mailto:${GUARDIAN_SENDER}?subject=unsubscribe>` },
+  });
 }
 
 // Notify a traveller's guardians on a state change. AMBER pushes only the active
@@ -69,6 +107,8 @@ export async function notifyGuardians(journeyId: string, state: ProtocolState, t
   const { data: active } = await db.from("monitoring_assignments").select("contact_id").eq("journey_id", journeyId).eq("active", true);
   const activeIds = new Set((active ?? []).map((a: any) => a.contact_id));
   const targets = (contacts ?? []).filter((c: any) => all || activeIds.has(c.id));
+  // Started before the app push so neither can hold up or stop the other. Never rejects.
+  const webPush = notifyContactsWebPush(journeyId, targets.map((c: any) => c.id), title, body);
   const linked = targets.map((c: any) => c.linked_user_id).filter(Boolean) as string[];
   const { data: profs } = linked.length
     ? await db.from("profiles").select("expo_push_token, loud_override").in("id", linked)
@@ -84,13 +124,14 @@ export async function notifyGuardians(journeyId: string, state: ProtocolState, t
   } else {
     await sendPush(withTok.map((p: any) => p.expo_push_token) as string[], title, body, { journeyId, state });
   }
+  await webPush;
   // I10: each guardian gets their own link (token carries their contactId) so the
   // ordinary status link can also show the Safe / Not safe vote card when a cancel
   // request is open. One email per recipient — a shared link cannot name a contact.
   for (const c of targets) {
     if (!c.email) continue;
     const link = `${process.env.APP_BASE_URL}/g/${signGuardianToken(journeyId, c.id)}`;
-    await sendEmail([c.email], title, `<p>${body}</p><p>${j.from_label} → ${j.to_label}</p><p><a href="${link}">Open live status</a></p>`);
+    await sendEmail([c.email], title, `<p>${body}</p><p>${escapeHtml(j.from_label)} → ${escapeHtml(j.to_label)}</p><p><a href="${link}">Open live status</a></p>`);
   }
   for (const c of targets)
     await db.from("alerts").insert({ journey_id: journeyId, recipient: c.id, channel: c.linked_user_id ? "push" : "email", state });

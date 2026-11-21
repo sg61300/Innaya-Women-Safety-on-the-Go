@@ -23,7 +23,6 @@ function makeDeps(over: Partial<CancelFlowDeps> = {}): CancelFlowDeps {
     verifyPassword: jest.fn().mockResolvedValue(true),
     verifyWord: jest.fn().mockResolvedValue(true),
     createRequest: jest.fn().mockResolvedValue({ askedCount: 3 }),
-    subscribeVerdict: jest.fn(() => () => {}),
     uploadMedia: jest.fn().mockResolvedValue("cancel/j1/r1.jpg"),
     captureMedia: { takePhoto: jest.fn().mockResolvedValue("file:///p.jpg"), recordVideo: jest.fn().mockResolvedValue("file:///p.mp4") },
     ...over,
@@ -36,7 +35,7 @@ const press = (el: Utils, id: string) => act(async () => fireEvent.press(el.getB
 describe("X5b exit affordance", () => {
   it("shows a 'Back to alarm' control and calls onExit from the password step", async () => {
     const onExit = jest.fn();
-    const el = await mount(<CancelFlow hasJourney deps={makeDeps()} onResolved={jest.fn()} onExit={onExit} />);
+    const el = await mount(<CancelFlow hasJourney deps={makeDeps()} onExit={onExit} />);
     await press(el, "cancel-exit");
     expect(onExit).toHaveBeenCalledTimes(1);
   });
@@ -44,7 +43,7 @@ describe("X5b exit affordance", () => {
   it("keeps the exit control on the media/proof step (never a dead end)", async () => {
     const onExit = jest.fn();
     // No journey → password step goes straight to the media proof step.
-    const el = await mount(<CancelFlow hasJourney={false} deps={makeDeps()} onResolved={jest.fn()} onExit={onExit} />);
+    const el = await mount(<CancelFlow hasJourney={false} deps={makeDeps()} onExit={onExit} />);
     await setText(el, "cancel-password-input", "pw");
     await press(el, "cancel-password-submit");
     el.getByTestId("cancel-step-media");
@@ -53,7 +52,7 @@ describe("X5b exit affordance", () => {
   });
 
   it("renders no exit control when onExit is not provided", async () => {
-    const el = await mount(<CancelFlow hasJourney deps={makeDeps()} onResolved={jest.fn()} />);
+    const el = await mount(<CancelFlow hasJourney deps={makeDeps()} />);
     expect(el.queryByTestId("cancel-exit")).toBeNull();
   });
 });
@@ -61,7 +60,7 @@ describe("X5b exit affordance", () => {
 describe("X5c network vs wrong password", () => {
   it("a network failure shows the retry message and does NOT count a try or lock", async () => {
     const verifyPassword = jest.fn().mockResolvedValue({ ok: false, reason: "network" });
-    const el = await mount(<CancelFlow hasJourney deps={makeDeps({ verifyPassword })} onResolved={jest.fn()} />);
+    const el = await mount(<CancelFlow hasJourney deps={makeDeps({ verifyPassword })} />);
     await setText(el, "cancel-password-input", "pw");
     await press(el, "cancel-password-submit");
     expect(el.getByTestId("cancel-error").props.children).toBe(i18n.t("cancelFlow.pwNetwork"));
@@ -79,7 +78,7 @@ describe("X5c network vs wrong password", () => {
 
   it("a genuinely wrong password (boolean false) still counts toward the 2-try lock", async () => {
     const verifyPassword = jest.fn().mockResolvedValue(false);
-    const el = await mount(<CancelFlow hasJourney deps={makeDeps({ verifyPassword })} onResolved={jest.fn()} />);
+    const el = await mount(<CancelFlow hasJourney deps={makeDeps({ verifyPassword })} />);
     await setText(el, "cancel-password-input", "x");
     await press(el, "cancel-password-submit");
     expect(el.getByTestId("cancel-error").props.children).toBe(i18n.t("cancelFlow.pwWrong", { n: 1 }));

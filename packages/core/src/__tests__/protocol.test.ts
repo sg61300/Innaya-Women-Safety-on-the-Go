@@ -118,15 +118,15 @@ describe("from CRITICAL — ADR-043 cancel flow", () => {
       expect(r.actions).toEqual([]);
     }
   });
-  it("step 3/4: CANCEL_REQUESTED → CANCEL_HOLD, guardians asked, siren held (siren mode)", () => {
+  it("step 3/4: CANCEL_REQUESTED stays CRITICAL (Fix AD round 2), guardians asked, siren held (siren mode)", () => {
     const r = go(at("CRITICAL"), { type: "CANCEL_REQUESTED", method: "word" });
-    expect(r.ctx.state).toBe("CANCEL_HOLD");
+    expect(r.ctx.state).toBe("CRITICAL");
     expect(r.actions).toEqual(expect.arrayContaining(["NOTIFY_GUARDIANS_CANCEL_REQUEST", "SIREN_HOLD"]));
     expect(r.actions).not.toContain("SIREN_OFF");
   });
   it("silent mode: CANCEL_REQUESTED never holds or sounds the siren", () => {
     const r = go(at("CRITICAL", false, false, "silent"), { type: "CANCEL_REQUESTED", method: "photo" });
-    expect(r.ctx.state).toBe("CANCEL_HOLD");
+    expect(r.ctx.state).toBe("CRITICAL");
     expect(r.actions).toContain("NOTIFY_GUARDIANS_CANCEL_REQUEST");
     expect(r.actions).not.toContain("SIREN_HOLD");
     expect(r.actions).not.toContain("SIREN_ON");
@@ -144,14 +144,6 @@ describe("from CRITICAL — ADR-043 cancel flow", () => {
   it("guardians keep the alarm (GUARDIAN_SAYS_WRONG) → CRITICAL, siren back on (siren mode)", () => {
     const r = go(at("CANCEL_HOLD"), { type: "GUARDIAN_SAYS_WRONG" });
     expect(r.ctx.state).toBe("CRITICAL"); expect(r.actions).toContain("SIREN_ON");
-  });
-  it("30 s with no answer: siren mode keeps the siren, request stays open", () => {
-    const r = go(at("CANCEL_HOLD"), { type: "CANCEL_TIMEOUT" });
-    expect(r.ctx.state).toBe("CANCEL_HOLD"); expect(r.actions).toContain("SIREN_ON");
-  });
-  it("30 s with no answer in silent mode: stays silent and open, no siren", () => {
-    const r = go(at("CANCEL_HOLD", false, false, "silent"), { type: "CANCEL_TIMEOUT" });
-    expect(r.ctx.state).toBe("CANCEL_HOLD"); expect(r.actions).not.toContain("SIREN_ON");
   });
   it("SILENT: entering CRITICAL never emits SIREN_ON; SOS again switches to siren", () => {
     const silent = go(at("SAFE"), { type: "SOS", mode: "silent" });

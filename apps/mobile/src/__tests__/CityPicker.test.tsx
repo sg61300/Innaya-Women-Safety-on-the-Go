@@ -51,7 +51,7 @@ test("crosshair: done maps the fix into a city and reports it", async () => {
   const onDetected = jest.fn();
   const s = await w(<CityPicker value="other" onChange={onChange} onDetected={onDetected} />);
   await act(async () => { fireEvent.press(s.getByTestId("citypicker-detect")); });
-  await waitFor(() => s.getByText("✓ Location detected — Bengaluru, Karnataka"));
+  await waitFor(() => s.getByText("✓ Location detected. Bengaluru, Karnataka"));
   expect(onChange).toHaveBeenCalledWith("bengaluru");
   expect(onDetected).toHaveBeenCalledWith("bengaluru", "Bengaluru, Karnataka");
 });
@@ -75,7 +75,7 @@ test("regions chip summarises unsafe zones and red alerts for the chosen city", 
   mockRpc.mockResolvedValue({ data: [{ status: "amber" }, { status: "red" }, { status: "red" }], error: null });
   const s = await w(<CityPicker value="bengaluru" onChange={jest.fn()} />);
   await act(async () => {}); // flush the mount-effect regions rpc + setZones inside act
-  await waitFor(() => s.getByText("3 unsafe zones, 2 red alerts — shown on your map"));
+  await waitFor(() => s.getByText("3 unsafe zones, 2 red alerts. Shown on your map"));
   expect(mockRpc).toHaveBeenCalledWith("regions_near", { lat: 12.9716, lng: 77.5946, radius_m: 15000 });
 });
 
@@ -83,7 +83,7 @@ test("regions chip excludes safe_by_police rows from the unsafe count", async ()
   mockRpc.mockResolvedValue({ data: [{ status: "safe_by_police" }, { status: "amber" }, { status: "red" }], error: null });
   const s = await w(<CityPicker value="bengaluru" onChange={jest.fn()} />);
   await act(async () => {});
-  await waitFor(() => s.getByText("2 unsafe zones, 1 red alerts — shown on your map"));
+  await waitFor(() => s.getByText("2 unsafe zones, 1 red alerts. Shown on your map"));
 });
 
 test("regions chip is hidden when there are no unsafe zones", async () => {

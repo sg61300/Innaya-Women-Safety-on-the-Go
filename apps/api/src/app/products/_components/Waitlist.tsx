@@ -177,10 +177,10 @@ export function Waitlist({ presetProduct }: { presetProduct?: string }) {
       <div className="v-wl">
         <div className="v-success" role="status" aria-live="polite" ref={successRef} tabIndex={-1}>
           <div className="v-tick" aria-hidden>✓</div>
-          <h3>{dup ? "You’re already registered." : "You’re on the list."}</h3>
+          <h3>{dup ? "You’re already on the list." : "You’re on the list."}</h3>
           <p>
             {dup
-              ? "Your place on the list is saved."
+              ? "We already have your details, no need to join twice. We’ll hold your launch price and be in touch the moment the waitlist opens."
               : "We’ll hold your launch price and be the first to tell you the moment the waitlist opens at launch."}
           </p>
         </div>

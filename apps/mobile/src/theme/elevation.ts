@@ -2,7 +2,7 @@ import { Platform, type ViewStyle } from "react-native";
 import { parseColor } from "./color";
 import type { Palette } from "./palettes";
 
-// VAIRA v2 elevation (founder b14: "make them designful, elegant, polished").
+// INNAYA v2 elevation (founder b14: "make them designful, elegant, polished").
 // The palette ships shadow tokens as CSS strings ("0 4px 18px rgba(...)") which
 // React Native cannot consume, so this maps the three tiers to native shadow
 // props (iOS shadow* + Android elevation). The shadow colour is derived from the

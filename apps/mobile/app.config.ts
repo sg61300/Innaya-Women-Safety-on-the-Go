@@ -5,7 +5,7 @@ import { ExpoConfig } from "expo/config";
 // app.config, and CI passes the secret (see .github/workflows/android-debug.yml).
 // Nothing else changed from the former app.json.
 const config = {
-  name: "VAIRA",
+  name: "INNAYA",
   slug: "vaira",
   version: "1.0.0",
   scheme: "vaira",
@@ -16,11 +16,14 @@ const config = {
   updates: { url: `https://u.expo.dev/${process.env.EAS_PROJECT_ID ?? "00000000-0000-0000-0000-000000000000"}` },
   runtimeVersion: { policy: "appVersion" },
   icon: "./assets/brand/icon-1024.png",
-  splash: {
-    image: "./assets/brand/emblem.png",
-    resizeMode: "contain",
-    backgroundColor: "#0C0A1E",
-  },
+  // s32: the legacy top-level `splash` key is NOT applied to the Android 12+
+  // system splash window background (Expo docs mark it legacy; the expo-
+  // splash-screen plugin's backgroundColor DEFAULTS to #ffffff when the plugin
+  // is absent) -> the emulator showed a WHITE native screen for the whole
+  // JS-load window. Fixed by configuring expo-splash-screen as a plugin below.
+  // OPEN (founder): native pre-JS backgroundColor kept at the current #0C0A1E;
+  // founder may want #17111F to match the video-splash background so there is no
+  // colour step into the JS splash. imageWidth is a neutral placeholder.
   notification: {
     icon: "./assets/brand/notification.png",
   },
@@ -29,6 +32,10 @@ const config = {
   },
   android: {
     package: "com.vaira.app",
+    // Firebase, needed for push. Git-ignored; CI writes it from the
+    // GOOGLE_SERVICES_JSON secret. Required on purpose: prebuild fails without it,
+    // so a build can never silently lose push (founder Q90).
+    googleServicesFile: "./google-services.json",
     // T5: all traffic is HTTPS (Supabase, Expo, api). Pin cleartext off explicitly
     // so a release AAB never allows plaintext HTTP even if a target-SDK default shifts.
     usesCleartextTraffic: false,
@@ -58,6 +65,21 @@ const config = {
     },
   },
   plugins: [
+    // s32: fixes the WHITE native start screen on Android 12+. backgroundColor
+    // preserves the former top-level splash colour (#0C0A1E); image + imageWidth
+    // are the pre-JS emblem. OPEN (founder): colour (#0C0A1E vs #17111F) and
+    // imageWidth are visual values to confirm — see the s32 report.
+    [
+      "expo-splash-screen",
+      {
+        backgroundColor: "#0C0A1E",
+        image: "./assets/brand/splash-emblem@3x.png",
+        imageWidth: 200,
+        resizeMode: "contain",
+      },
+    ],
+    // s32: required by `npx expo install expo-video` (the walking-logo splash).
+    "expo-video",
     // APK size (lane Z): R8/ProGuard + resource shrink strip unused Java/Kotlin
     // and resources from the release build; useLegacyPackaging: true DEFLATE-
     // compresses the native .so in the standalone APK (they ship Stored/0% today,
@@ -126,9 +148,9 @@ const config = {
     [
       "expo-speech-recognition",
       {
-        microphonePermission: "VAIRA listens for your safety words during a journey.",
+        microphonePermission: "INNAYA listens for your safety words during a journey.",
         speechRecognitionPermission:
-          "VAIRA turns speech into text on your phone to detect your safety words.",
+          "INNAYA turns speech into text on your phone to detect your safety words.",
         // X6 (s25): do NOT rely only on the Google app — on Samsung it can be
         // disabled/absent, which left the mic dead. List the common on-device
         // recognition services so the app can discover whichever the phone has

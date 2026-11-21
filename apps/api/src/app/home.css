@@ -15,15 +15,13 @@
    never flashes white (only .vhome carried --ground before; the html canvas did
    not). Same hex as --ground. Native bounce kept (no overscroll-behavior). This
    loads only on route "/" (home.css is imported by that page). Founder 2026-10-03. */
-html{background:#17111F}
+html{background:#101B21}
 
 .vhome{
-  /* the ground (dark act) — Deep Plum-Ink (s30, founder 2026-10-09: the app is
-     the hero now, so the page ground is warmed from the old cold petrol toward the
-     app's own plum/lavender world so the in-app screenshots sit on it instead of
-     fighting it). One variable set; card and nav grounds retint from it. WCAG AA on
-     #17111F verified: ground-ink 15.9:1, ground-dim 7.6:1, rose eyebrow 7.7:1. */
-  --ground:#17111F; --ground-2:#241A33; --ground-ink:#F3ECF2; --ground-dim:#AEA2B8; --ground-line:#352A44;
+  /* the ground (dark act) — Slate Petrol (palette system 2, founder ruling
+     2026-10-02): desaturated petrol, not navy. One variable set; card and nav
+     grounds retint from it. */
+  --ground:#101B21; --ground-2:#182831; --ground-ink:#ECF1F2; --ground-dim:#A6B6BC; --ground-line:#2A3A42;
   /* the ground treatment: a tonal top-to-bottom gradient (veil) over the dark
      sections + a faint fractal grain. */
   --veil:linear-gradient(180deg,rgba(255,255,255,.03),transparent 28%,rgba(0,0,0,.26)); --grain:.02;
@@ -35,19 +33,10 @@ html{background:#17111F}
   /* the one light */
   --rose:#CB9E80; --rose-2:#B98D6F; --cta-ink:#29203B; --plum:#8A5A8F;
   --sos:#D8382B;
-  /* in-app phone palette (the CSS mock screens: the guardian view + "reached safely").
-     s30 pass 3: the real captures are now deep plum, so the two CSS mocks match them —
-     near-black plum ground, dark surfaces, light ink — instead of the old light theme
-     that left a white screen beside the dark ones. Scoped to .vhome, used only by the
-     mocks + the .screen fallback ground, so flipping it is contained. */
-  --p-bg:#141019; --p-surf:#241A33; --p-ink:#F3ECF2; --p-muted:#A99BB8; --p-rose:#C6997A; --p-sapphire:#93A4C8; --p-line:#372B47;
+  /* in-app phone palette (the CSS app screen) */
+  --p-bg:#F5F0F4; --p-surf:#FFFFFF; --p-ink:#2A2136; --p-muted:#6F6280; --p-rose:#C6997A; --p-sapphire:#3E4A63; --p-line:#E6DDE6;
 
   --maxw:1200px;
-  /* scroll-pop motion (s30 pass 3): --p = swoop progress 0..1 (far/small/flat -> near/
-     big/front), --x = exploded-layer amount 0..1. Defaults here so inheritance reaches
-     every phone; the JS driver sets them closer down the tree (per-section), and with
-     JS off / reduced motion the phones rest at the settled front pose. */
-  --p:1; --x:0;
   --serif:var(--font-spectral),Georgia,"Times New Roman",serif;
   --sans:var(--font-work),system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
 
@@ -62,12 +51,12 @@ html{background:#17111F}
 
 /* fine grain over the dark grounds only (the light's "grain"), excluded from the
    pinned stage where a blended overlay would repaint every scrub frame. */
-.vhome .hero::after,.vhome .dark::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:var(--grain,.05);mix-blend-mode:overlay;
+.vhome .hero::after,.vhome .dark:not(.seq)::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:var(--grain,.05);mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
 
 /* the ground veil: a tonal gradient over the dark sections + footer (cheap: no
    blur, no fixed attachment, so it costs no scroll fps). Part of the ground. */
-.vhome .hero,.vhome .dark,.vhome footer{background-image:var(--veil,none)}
+.vhome .hero,.vhome .dark:not(.seq),.vhome footer{background-image:var(--veil,none)}
 
 .vhome .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;position:relative;z-index:2}
 .vhome h1,.vhome h2,.vhome h3,.vhome .disp{font-family:var(--serif);font-weight:500;margin:0}
@@ -90,32 +79,19 @@ html{background:#17111F}
 .vhome .rule-dot::before{left:-1px}.vhome .rule-dot::after{right:-1px}
 
 /* chapter number behind a section title — the one decorative flourish */
-.vhome .chapno{font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(44px,4.6vw,60px);line-height:.8;color:var(--rose);opacity:.1;position:absolute;left:-2px;top:-1.15em;bottom:auto;z-index:0;pointer-events:none;font-variant-numeric:tabular-nums}
-.vhome .warm .chapno{opacity:.5} /* s33d founder "make this 3 darker": on the cream ground .1 is near invisible; dark sections unchanged */
-/* top:-1.15em (was -.6em): the numeral bottom sat ~6px BELOW the eyebrow top
-   (measured gapNoToEb -6px for 01/02/03 at 1800px, s28 C4). Lifting it opens a
-   >=24px gap between the faint numeral and the eyebrow below it (founder: the
-   numeral sits too close to the eyebrow). Still inside each section; the pinned
-   stage is kept short enough to fit by the height-band rule below. */
-/* the numeral is a faint watermark anchored by its TOP to the section's own top
-   padding. The old bottom:calc(100%+8px) pushed its TOP above the section edge and
-   clipped the glyph (measured gapTop -16px for 01 at 1280x800, +1.6px for 02/03,
-   s28 C3). A smaller cap + top:-.6em keep the whole numeral inside every section at
-   every width/height, including the pinned story whose copy is vertically centred. */
+.vhome .chapno{font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(56px,7vw,88px);line-height:.8;color:var(--rose);opacity:.1;position:absolute;left:-4px;bottom:calc(100% + 8px);z-index:0;pointer-events:none;font-variant-numeric:tabular-nums}
+/* the numeral lives in the band above the eyebrow (the section's own top padding),
+   so it never crosses a text box: measured intersection 0 (D13). */
 
 /* section theming */
 /* rhythm (8-pt): section padding 80 (64 on phones); head -> object 40; object -> body 40;
    element gaps 16/24. Adjacent sections meet at 160 (128 on phones). */
 .vhome .sec{position:relative;z-index:2;padding:80px 0}
-.vhome .dark{background-color:var(--ground);color:var(--ground-ink)} /* colour only: a `background` shorthand here would wipe the veil set above */
+.vhome .dark{background:var(--ground);color:var(--ground-ink)}
 .vhome .warm{background:var(--cream);color:var(--cream-ink)}
 .vhome .dark .eyebrow{color:var(--rose)}
 .vhome .warm .eyebrow{color:var(--plum)} /* rose fails AA on cream (2.24:1); plum reads (4.68:1) */
-/* s30: the jewellery act's eyebrow becomes a small quiet "coming later" pill chip
-   (its copy "And later" is kept; no invented label) so the act reads as secondary. */
-.vhome .later .sec-head .eyebrow{display:inline-block;padding:6px 13px;border:1px solid var(--plum);border-radius:100px;background:rgba(138,90,143,.07);letter-spacing:.18em}
-/* s33d founder "ther is no line in number 3": the pill keeps the same rule line + dot as every other eyebrow */
-.vhome .sec-title{font-family:var(--serif);font-weight:500;font-size:clamp(31px,4.25vw,48px);/* s33d founder "All section headings" ~15% smaller (was clamp(36px,5vw,56px)) */line-height:1.0;letter-spacing:-.015em}
+.vhome .sec-title{font-family:var(--serif);font-weight:500;font-size:clamp(36px,5vw,56px);line-height:1.0;letter-spacing:-.015em}
 .vhome .sec-title em{font-style:italic;font-weight:400;color:var(--rose)}
 .vhome .warm .sec-title em{color:var(--plum)}
 .vhome .sec-head{position:relative;margin-bottom:40px}
@@ -159,22 +135,10 @@ html{background:#17111F}
 .vhome .hero-emblem{position:relative;display:flex;justify-content:center;align-items:center;width:100%}
 .vhome .hero-emblem::before{content:"";position:absolute;left:50%;top:50%;width:min(560px,96%);aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(248,247,243,.06),rgba(248,247,243,.02) 45%,transparent 66%);pointer-events:none;z-index:0}
 .vhome .hero-emblem img{position:relative;z-index:1;width:clamp(220px,34vw,380px);height:auto;filter:drop-shadow(0 24px 48px rgba(0,0,0,.4))}
-/* Logo walk, transparent (s33c): the still and the WebGL canvas sit in the same
-   square; the canvas shows only once it has drawn a frame (.live, CampaignMotion).
-   Same size as the s33 loop video. img.logo-still out-ranks the older
-   `.hero-emblem img` size rules so the still and the canvas always match.
-   The source video is kept rendered (iOS will not decode a display:none video)
-   but invisible. */
-.vhome .hero-emblem .logo-stack{position:relative;z-index:1;width:clamp(220px,34vw,380px);aspect-ratio:1/1}
-.vhome .hero-emblem img.logo-still,.vhome .hero-emblem .logo-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;filter:none}
-.vhome .hero-emblem .logo-canvas{opacity:0}
-.vhome .hero-emblem .logo-stack.live .logo-canvas{opacity:1}
-.vhome .hero-emblem .logo-stack.live img.logo-still{opacity:0}
-.vhome .hero-emblem video.logo-src{position:absolute;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none}
 .vhome .hero-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;align-items:center;width:100%}
 .vhome .hero-copy{max-width:560px}
 .vhome .hero .eyebrow{margin-bottom:26px}
-.vhome .disp-hero{font-family:var(--serif);font-weight:500;font-size:clamp(33px,5.2vw,66px);line-height:.96;letter-spacing:-.025em;margin:0 0 26px;white-space:nowrap}/* ab1: fluid, exactly 2 lines 320-2560 (merged from s32ab) */
+.vhome .disp-hero{font-family:var(--serif);font-weight:500;font-size:clamp(52px,8.6vw,104px);line-height:.92;letter-spacing:-.025em;margin:0 0 26px}
 .vhome .disp-hero em{display:block;font-style:italic;font-weight:400;color:var(--rose)}
 .vhome .hero .lede{color:var(--ground-dim);max-width:44ch;margin-bottom:34px}
 .vhome .hero-object{position:relative;display:flex;justify-content:center;align-items:center}
@@ -195,7 +159,7 @@ html{background:#17111F}
 .vhome .wl input[aria-invalid="true"]{border-color:var(--sos)}
 .vhome .wl .consent{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ground-dim);margin:2px 0 16px;cursor:pointer}
 .vhome .wl .consent input{width:18px;height:18px;accent-color:var(--rose);flex:0 0 18px}
-.vhome .wl .err{display:block;color:#F1A7A0;font-size:12px;font-weight:500;margin:8px 0 2px}/* was margin-top:-8px, which pulled the message onto the field's bottom border (measured gap -8px); +8px sits it below the field (founder s28 C3, defect 7) */
+.vhome .wl .err{display:block;color:#F1A7A0;font-size:12px;font-weight:500;margin:-8px 0 12px}
 .vhome .wl .banner{background:#3A1620;color:#F1A7A0;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:500;margin:0 0 14px}
 .vhome .wl .btn{width:100%;background:var(--rose);color:var(--cta-ink);border:none;border-radius:100px;padding:15px;font-family:inherit;font-weight:600;font-size:15px;letter-spacing:.02em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .3s,background .3s}
 .vhome .wl .btn:hover:not(:disabled){transform:translateY(-2px);background:var(--rose-2)}
@@ -210,329 +174,148 @@ html{background:#17111F}
 .vhome .wl .success p{color:var(--ground-dim);font-size:14px}
 
 /* THE PHONE (flat, straight, thin bezel, one soft shadow — no tilt beyond 4deg Y, no reflection) */
-.vhome .phone{position:relative;width:290px;height:600px;border-radius:44px;background:linear-gradient(155deg,#3b2e49,#211629 70%,#1a1122);padding:9px;box-shadow:0 26px 54px -26px rgba(0,0,0,.6)}
+.vhome .phone{position:relative;width:290px;height:600px;border-radius:44px;background:linear-gradient(150deg,#2c2436,#181321);padding:9px;box-shadow:0 26px 54px -26px rgba(0,0,0,.6)}
 .vhome .phone::before{content:"";position:absolute;top:16px;left:50%;transform:translateX(-50%);width:96px;height:7px;background:#0d0a12;border-radius:10px;z-index:6}
-/* s33d founder "make phone size slightly smaller without affecting data screen and size" (section 2): thinner body, 9px -> 5px bezel; the screen stays 272x582 (the carousel scale is computed from the fixed 600/290 design size, so the screen renders exactly as before). */
-.vhome .people .phone{width:282px;height:592px;padding:5px;border-radius:40px}
-.vhome .people .phone::before{top:12px}
-.vhome .people .screen{inset:5px;border-radius:35px} /* the screen is absolutely inset, so the inset (not the padding) sets the bezel */
 .vhome .screen{position:absolute;inset:9px;border-radius:34px;overflow:hidden;background:var(--p-bg);color:var(--p-ink)}
 .vhome .screen-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .vhome .pane{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;display:flex;flex-direction:column;font-family:var(--sans);padding:44px 18px 74px}
 .vhome .pane.on{opacity:1}
-
-/* EXPLODED SCREEN LAYERS (effect A). Clipped duplicate bands of the base capture
-   (img.lift), plus the guardian / reached-safely cards (.lift), that lift toward the
-   viewer as --x rises: scroll-linked on the flow sections, pulsed per step on the
-   pinned stage. At --x 0 every band overlays the base exactly, so the screen reads as
-   one flat capture until motion. The screen's overflow:hidden + radius clip the risen
-   bands to the glass, so parts float forward without spilling past the bezel. Only
-   transform/opacity animate; the soft inter-layer shadow is a GPU drop-shadow. */
-@property --x{syntax:"<number>";inherits:true;initial-value:0}
-/* --exr: a transient turn applied to the journey phone DURING the explode pulse, so the
-   screen layers separate as parallax while the phone is angled (not flat-on, where the
-   lift barely reads) — the fix ChatGPT's reference flagged (founder 2026-10-10). Eased,
-   registered so it interpolates; rotates out with the lift, back to front as it settles. */
-@property --exr{syntax:"<angle>";inherits:false;initial-value:0deg}
-.vhome .lifts{position:absolute;inset:0;pointer-events:none;z-index:2}
-.vhome img.lift{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.vhome .lift{
-  transform:translateY(calc(var(--x,0) * var(--z,1) * -24px)) scale(calc(1 + var(--x,0) * var(--z,1) * .11));
-  filter:drop-shadow(0 calc(var(--x,0) * var(--z,1) * 17px) calc(.01px + var(--x,0) * var(--z,1) * 22px) rgba(16,8,22,calc(var(--x,0) * .52)))}
 .vhome .pane .pe{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum);font-weight:600}
 .vhome .pane .pt{font-family:var(--serif);font-weight:500;font-size:23px;line-height:1.1;color:var(--p-ink);margin:8px 0 14px}
 .vhome .pcard{background:var(--p-surf);border:1px solid var(--p-line);border-radius:16px;padding:16px;box-shadow:0 8px 20px -12px rgba(80,60,90,.18)}
 .vhome .pcard .pm{font-size:12px;color:var(--p-muted)}
+.vhome .ppill{margin-top:14px;background:var(--p-rose);color:var(--cta-ink);text-align:center;padding:12px;border-radius:100px;font-size:14px;font-weight:600}
+.vhome .pmap{flex:1;border-radius:16px;margin-top:6px;background:radial-gradient(circle at 30% 30%,rgba(62,74,99,.12),transparent 40%),linear-gradient(135deg,#ECE4EC,#F7F2F7);border:1px solid var(--p-line);position:relative;overflow:hidden}
+.vhome .pmap .route{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.vhome .pmap .route path{fill:none;stroke:var(--p-sapphire);stroke-width:2;stroke-dasharray:4 3;vector-effect:non-scaling-stroke;opacity:.7;stroke-dashoffset:0}
+.vhome .pmap .dot{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--p-rose);left:22%;top:74%;box-shadow:0 0 0 6px rgba(198,153,122,.25)}
 .vhome .pguard{display:flex;align-items:center;gap:10px;background:var(--p-surf);border:1px solid var(--p-line);border-radius:14px;padding:11px 12px;margin-top:10px}
 .vhome .pguard .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--p-sapphire),#5a6b8c);flex:none}
+.vhome .pguard .av2{background:linear-gradient(135deg,#C6997A,#B4886B)}
 .vhome .pguard .tn{font-size:12px;font-weight:600;color:var(--p-ink)}
 .vhome .pguard .ts{font-size:11px;color:var(--p-sapphire)}
 .vhome .psafe{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
 .vhome .psafe .ring{width:96px;height:96px;border-radius:50%;border:2px solid var(--p-rose);display:flex;align-items:center;justify-content:center}
 .vhome .psafe .ring svg{width:44px;height:44px;stroke:var(--p-rose);fill:none;stroke-width:2.4;stroke-dasharray:1;stroke-dashoffset:var(--check,0)}
 .vhome .psafe .st{font-family:var(--serif);font-size:22px;color:var(--p-ink)}
+.vhome .ptab{position:absolute;left:11px;right:11px;bottom:11px;height:58px;background:var(--p-surf);border-top:1px solid var(--p-line);display:flex;align-items:center;justify-content:space-around;border-radius:0 0 34px 34px;z-index:5}
+.vhome .ptab i{width:22px;height:22px;color:var(--p-muted);opacity:.65;display:flex}
+.vhome .ptab i svg{width:22px;height:22px}
+.vhome .sosbtn{width:52px;height:52px;border-radius:50%;background:var(--sos);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;letter-spacing:.05em;box-shadow:0 8px 20px -6px rgba(216,56,43,.6);margin-top:-22px;border:3px solid var(--p-surf)}
 
 /* reveals — hidden only once JS adds .js-motion to <html> */
 .js-motion .vhome .reveal{opacity:0;transform:translateY(14px);transition:opacity .4s cubic-bezier(.16,.8,.3,1),transform .4s cubic-bezier(.16,.8,.3,1)}
 .vhome .reveal.in{opacity:1;transform:none}
 .vhome .d1{transition-delay:.08s}.vhome .d2{transition-delay:.16s}.vhome .d3{transition-delay:.24s}
 
-/* CHAPTER 01 (s33) — the journey as a short phone film. The film sits centred, the
-   five-step caption below it, at every width (same layout on laptop and mobile). The
-   caption <ol> is a plain flow list by default (no-JS / reduced motion: all five steps
-   read under the poster); CampaignMotion adds .film-synced to show one at a time in step
-   with the film. */
-/* Round 2 (founder 2026-10-16): the whole section fits ONE viewport (nothing cuts at any
-   scroll position). film-wrap is a 100svh flex column, head + caption fixed, the film-stage
-   takes the remaining height so the film sizes to the space left. The film ground matches the
-   page ground (flat --ground, baked into the render + poster) so there is no "box" / card. */
-/* .sec.film-sec (0,3,0) so the mobile `.vhome .sec{padding:64px 0}` rule cannot re-add padding:
-   the section must be exactly the viewport, with all breathing room inside film-wrap. */
-.vhome .sec.film-sec{padding:0}
-/* height (not min-height) gives the flex column a DEFINITE height, so the portrait film is
-   bound by the leftover height (not stretched to full width). */
-/* top padding clears the FIXED nav (its real height is measured into --nav-h by CampaignMotion;
-   72px fallback for first paint / no-JS) so the eyebrow + "01" never hide under the nav. */
-/* .film-sec .film-wrap (0,3,0) so the mobile `.vhome .wrap{padding:0 16px}` rule cannot zero the
-   top/bottom padding that holds the content below the nav. */
-.vhome .film-sec .film-wrap{height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:calc(var(--nav-h,72px) + clamp(6px,1.4svh,18px)) 24px clamp(16px,3.2svh,44px);
-  box-sizing:border-box}
-/* the "01" numeral overhangs the head top; pull it in so it, like the eyebrow, clears the nav. */
-.vhome .film-head .chapno{top:-0.2em}
-.vhome .film-head{position:relative;flex:none;margin:0 0 clamp(10px,2svh,24px);max-width:620px}
-.vhome .film-head .eyebrow{margin-bottom:14px}
-.vhome .film-head .sec-title{position:relative;z-index:1}
-/* s33d founder "left align is ok in laptop" + "align everything across screen sizes": on wide screens the film head lines up LEFT with every other section head (same 24px wrap gutter); narrow screens stay centred. */
-@media(min-width:981px){.vhome .film-head{align-self:flex-start;text-align:left;margin-top:clamp(58px,7.5svh,72px)}.vhome .film-head .chapno{top:-1.15em}}@media(min-width:1024px){.vhome .film-sec .film-wrap{padding-left:0;padding-right:0;grid-template-columns:minmax(0,520px) minmax(0,1fr);column-gap:clamp(40px,5vw,96px)}} /* s33d founder "one is overlapping": the 01 sits ABOVE the eyebrow like 02-04 (room made under the nav) */
-/* s33d founder "Side by side on laptop" (+ "make mobile bigger"): on wide screens the heading,
-   caption and Replay sit in the left column and the film takes the right column at nearly the full
-   screen height, so the app screens are readable. Narrow screens keep the stacked layout. */
-@media(min-width:981px){
-  .vhome .film-sec .film-wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:48px;
-    grid-template-rows:1fr auto auto auto 1fr;grid-template-areas:". stage" "head stage" "caps stage" "replay stage" ". stage";
-    align-items:start;justify-items:start;text-align:left}
-  .vhome .film-head{grid-area:head;margin-top:0;align-self:end}
-  .vhome .film-stage{grid-area:stage;width:100%;height:100%;min-height:0}
-  .vhome .film-sec .film-caps{grid-area:caps;margin:clamp(16px,3svh,32px) 0 0;text-align:left} /* (0,3,0): beats the base margin:auto that centred the caption in the rail */
-  .vhome .film-replay{grid-area:replay}
-}
-@media(min-width:1024px){.vhome .film-sec .film-wrap{grid-template-columns:minmax(0,520px) minmax(0,1fr);column-gap:clamp(40px,5vw,96px)}} /* same rail + zone as the hero */
-/* s33d founder "put in 2 or one line in mobile mode": section headings on narrow screens may use the full width (15ch cap lifted) so they wrap to 2 lines, not 3. */
-.vhome .sec-head .sec-title{max-width:22ch} /* all widths: founder "in laptop mode also" */
-/* s33d founder (phones): "for smaller screens also make mobile a bit more bigger", "screen and data
-   should be visible without zoom", "you can make headings a bit smaller": on narrow screens section 1's
-   heading, caption and frame shrink so the film (the phone) gets the freed height. */
-@media(max-width:980px){
-  .vhome .film-head .sec-title{font-size:clamp(26px,7vw,34px)}
-  .vhome .film-head .eyebrow{margin-bottom:8px}
-  .vhome .film-head{margin-bottom:8px}
-  .vhome .film-sec .film-cap h3{font-size:clamp(18px,4.6vw,24px)} /* s33e: .film-sec raises it above the later base rule, which had silently won */
-  .vhome .film-sec .film-caps{min-height:72px;margin-top:8px}
-  .vhome .film-video{max-height:100%}
-}
-/* the film-stage height is the leftover flex space; the video is ABSOLUTE inside it so it never
-   inflates that cell (an intrinsic-aspect element with % max-height would otherwise form a
-   circular size and overflow). It centres and fits within the cell at every viewport. */
-.vhome .film-stage{flex:1 1 auto;min-height:0;width:100%;position:relative}
-.vhome .film-video{position:absolute;inset:0;margin:auto;width:auto;height:auto;max-width:100%;max-height:100%;
-  object-fit:contain;aspect-ratio:940/1800;background:var(--ground);
-  /* s33d founder "remove box from background" (after "bigger and wider"): no frame; the film edges fade into the page so its slightly lighter ground never reads as a box */
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(180deg,transparent,#000 5%,#000 95%,transparent);-webkit-mask-composite:source-in;
-  mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(180deg,transparent,#000 5%,#000 95%,transparent);mask-composite:intersect}
-/* caption: BASE = the collapsed single-caption slot, reserved from first paint so there is NO
-   hydration jump (the film-sync JS only toggles .on). Absolute children would collapse the
-   width, so it is pinned. Reduced motion + no-JS expand it to the full readable 5-step list. */
-.vhome .film-caps{list-style:none;padding:0;position:relative;width:39ch;max-width:86vw;min-height:96px;
-  flex:none;margin:clamp(10px,1.8svh,20px) auto 0}
-/* captions cross-fade WITHOUT overlap: the outgoing one fades out over 250ms (base, no delay);
-   the incoming one waits 260ms (delay) before it fades in, so two are never legible at once. */
-.vhome .film-cap{position:absolute;left:0;right:0;top:0;margin:0;opacity:0;transform:translateY(8px);
-  transition:opacity .25s ease,transform .25s ease;pointer-events:none}
-.vhome .film-cap.on{opacity:1;transform:none;transition:opacity .3s ease .26s,transform .3s ease .26s}
-.vhome .film-cap .num{display:block;font-family:var(--sans);font-weight:600;font-size:11px;
-  letter-spacing:.2em;color:var(--rose);font-variant-numeric:tabular-nums;margin-bottom:8px}
-.vhome .film-cap h3{font-family:var(--serif);font-weight:500;font-size:clamp(22px,4.6vw,30px);
-  line-height:1.12;color:var(--ground-ink);margin:0}
-/* reduced motion: show the full 5-step list (film is poster-only there). The no-JS fallback
-   uses the matching <noscript> style in page.tsx. */
-/* reduced motion (founder s33e option B): the same one-caption slot as everyone, switched instantly (no fade/slide) */
-@media (prefers-reduced-motion:reduce){ .vhome .film-cap,.vhome .film-cap.on{transform:none;transition:none} }
-/* Replay button (s31 look). display:none while hidden (no reserved dead space during play, and
-   out of the tab order); CampaignMotion adds .show when the film ends -> inline-flex, focusable,
-   with a visible focus ring. Restored after a concurrent sed edit dropped this block. */
-.vhome .film-replay{display:none;margin-top:14px;font-family:var(--sans);font-weight:600;font-size:13px;
-  line-height:1;color:var(--cta-ink);background:var(--rose);border:0;border-radius:100px;padding:11px 22px;
-  cursor:pointer;transition:transform .3s ease,background .3s ease}
-.vhome .film-replay.show{display:inline-flex;align-items:center}
-.vhome .film-replay:hover{transform:translateY(-2px);background:var(--rose-2)}
-.vhome .film-replay:focus-visible{outline:3px solid var(--rose);outline-offset:3px}
-@media (prefers-reduced-motion:reduce){ .vhome .film-replay{transition:none} }
+/* CHAPTER 01 — the journey. Desktop (>= 981px): a sticky phone + a persistent
+   four-step list, the active step lit, one source of truth (the scroll handler
+   sets --i = active index, which drives BOTH the step and the phone pane). The
+   section is tall enough that each beat holds roughly one viewport of scroll:
+   span = 460vh - 100vh pin = 360vh over 4 beats = 90vh (~0.9 viewport) per beat.
+   Founder 2026-10-03: the change on scroll must be unmistakable. */
+.js-motion .vhome .seq{height:460vh}
+.vhome .app-seq{padding:0}
+/* no glow inside the pinned stage (blurred layer under moving panes costs fps, D12). */
+.vhome .seq-pin{position:sticky;top:0;height:100vh;display:flex;align-items:center;overflow:hidden;padding-top:84px;box-sizing:border-box}
+.vhome .stage-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:center;width:100%}
+.vhome .stage-copy{position:relative}
+.vhome .stage-copy .eyebrow{margin-bottom:20px}
+.vhome .stage-copy .sec-title{margin-bottom:12px;position:relative;z-index:1}
+.vhome .stage-object{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;transform-origin:center}
+/* persistent list: all four steps always visible, the active one full ink + rose
+   numeral + opacity 1, the others dimmed to .45. No absolute stacking. */
+.vhome .beats{list-style:none;margin:24px 0 0;padding:0;max-width:520px}
+/* default: every step at full opacity (so with JS off all four read in flow, no
+   half-baked dimmed state). The dim-the-inactive treatment applies only once JS
+   enhances the page and can move the active step on scroll. */
+.vhome .beat{padding:18px 0;border-top:1px solid var(--ground-line);opacity:1;transition:opacity .32s ease}
+.vhome .beat:first-child{border-top:none;padding-top:0}
+.js-motion .vhome .beat{opacity:.45}
+.js-motion .vhome .beat[aria-current="step"]{opacity:1}
+.vhome .beat .n{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--rose);letter-spacing:.05em}
+.vhome .beat h3{font-family:var(--serif);font-weight:500;font-size:clamp(19px,2vw,23px);margin:8px 0 6px;color:var(--ground-ink)}
+.vhome .beat p{font-size:clamp(14px,1.4vw,15px);color:var(--ground-dim);max-width:46ch}
+/* the 01 / 04 counter beside the phone */
+.vhome .seq-counter{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px;letter-spacing:.3em;color:var(--rose)}
+.vhome .seq-counter .cur{color:var(--ground-ink)}
+/* the phone pane changes by SLIDING the new pane up (translateY 24px + opacity,
+   320ms ease-out), not a fade in place. Only the incoming (.on) pane animates; a
+   pane that loses .on hides at once (transition:none), so the outgoing pane never
+   lingers under the incoming one and their text can never overlap mid-change. JS
+   adds .on to the pane whose index equals the active beat index, the same source
+   of truth as the lit step, so text and screen are always paired. */
+.vhome .app-seq .pane{opacity:0;transform:translateY(24px);transition:none}
+.vhome .app-seq .pane.on{opacity:1;transform:none;transition:opacity .32s ease-out,transform .32s ease-out}
 
+/* phone (<= 980px): a horizontal scroll-snap carousel, one card per beat, each
+   card carrying its own phone pane. Self-advances when in view (JS), stops for
+   good on any touch/swipe/dot tap. Hidden on desktop. */
+.vhome .beats-mobile{display:none}
+.vhome .beats-carousel{list-style:none;margin:0;padding:4px 0 8px;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.vhome .beats-carousel::-webkit-scrollbar{display:none}
+.vhome .vcard{flex:0 0 min(86%,420px);scroll-snap-align:center;background:var(--ground-2);border:1px solid var(--ground-line);border-radius:22px;padding:24px 20px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:inset 0 0 0 1px rgba(198,153,122,.14)}
+.vhome .vcard-copy{text-align:center}
+.vhome .vcard-copy .n{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--rose);letter-spacing:.05em}
+.vhome .vcard-copy h3{font-family:var(--serif);font-weight:500;font-size:clamp(20px,5.4vw,24px);margin:6px 0 8px;color:var(--ground-ink)}
+.vhome .vcard-copy p{font-size:14px;line-height:1.55;color:var(--ground-dim);max-width:34ch;margin:0 auto}
+.vhome .vcard-phone{height:372px;width:100%;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
+.vhome .vcard-phone .phone{transform:scale(.62);transform-origin:top center;margin-bottom:-228px} /* 600*.38 slack reclaimed */
+/* the first card pops in when the section enters the viewport (JS removes .pre) */
+.js-motion .vhome .beats-carousel.pre .vcard[data-beat="0"]{opacity:0;transform:translateY(24px)}
+.vhome .beats-carousel .vcard[data-beat="0"]{transition:opacity .32s ease-out,transform .32s ease-out}
+/* dots with a per-card thin fill (the fill animates over the autoplay dwell) */
+.vhome .carousel-dots{display:flex;justify-content:center;gap:10px;margin-top:18px}
+.vhome .cdot{width:28px;height:4px;border-radius:2px;background:var(--ground-line);border:none;padding:0;position:relative;overflow:hidden;cursor:pointer;flex:none}
+.vhome .cdot:focus-visible{outline:3px solid var(--rose);outline-offset:4px}
+.vhome .cdot .fill{position:absolute;inset:0;background:var(--rose);transform:scaleX(0);transform-origin:left}
+.vhome .cdot[aria-selected="true"] .fill{transform:scaleX(1)}
 
-/* CHAPTER 02 — "the ones who wait up". CYLINDER CAROUSEL (s32, founder 2026-10-12).
-   Two phones on a cylinder, one front one behind; JS (CampaignMotion) writes --rot
-   (0 = her phone front, 1 = guardian view front) and the per-slot 3D transform/opacity.
-   ===== FOUNDER-TUNABLE: these are the only look + hold knobs (all flagged in the
-   lane report as open questions; neutral starting values). ===== */
-.vhome .people{
-  --pcyl-vmargin:16px;   /* clear space above + below the front phone in the held area (round 2:
-                            28->16 so the phone fills more of the stage, less empty frame) */
-  --pcyl-hmargin:22px;   /* clear space left + right of the front phone */
-  --pcyl-depth:300px;    /* how far back the rear phone sits (bigger = deeper recede) */
-  --pcyl-frontroom:46px; /* FIXED side allowance so the FRONT phone never fills the whole width
-                            and the side phone can peek beside it. Larger = slightly smaller front
-                            on tall phones = a more visible peek there (founder 2026-10-12: "make
-                            front phone slightly smaller"). This is OPTION "S" (~8% smaller front
-                            at 390x844: 222x460 vs the earlier 242x500). Option "L" (~15%) = 54px.
-                            Only affects tall-narrow phones (360/390/412); 489 and desktop are
-                            height/cap-bound, so they are unchanged. */
-  --pcyl-peek:90px;      /* how far the side phone slides out from BEHIND the front (its outer
-                            edge sits this far past the front edge; the rest tucks behind,
-                            clamped so it never leaves the viewport). THIS IS PRESET "A".
-                            B(small)=40, C(large)=160 in the evidence. */
-  --pcyl-turn:34;        /* peak rotateY (deg) of the side phone as it turns away */
-  --pcyl-backscale:.62;  /* rear phone size relative to the front phone */
-  --pcyl-backop:.55;     /* rear phone opacity (founder 2026-10-12: must read as a real
-                            second phone beside the front, not a faint ghost) */
-  /* MID-TURN ARC (founder 2026-10-13: "reduce the overlap"). Each peaks at the mid-turn
-     crossover and is ZERO at rest, so the rest look + front size never change. */
-  --pcyl-zarc:260px;     /* extra push-back during the turn (deeper = phones barely cross) */
-  --pcyl-xarc:40px;      /* extra sideways bow-apart during the turn */
-  --pcyl-midshrink:.16;  /* extra shrink during the turn (0..1) */
-  --pcyl-maxscale:1.08;  /* cap so the front phone never grows absurd on a huge window */
-  --people-hold:54svh;   /* scroll length the section stays held (swoop + dwell). Round 2: 90->54
-                            to cut the idle dwell / big gap below the phone; the swap still runs
-                            over the first --people-swoop (.5) of the hold. FOUNDER-TUNABLE. */
-  --people-swoop:.5;     /* fraction of the hold the back->front turn uses (rest = dwell) */
-}
+/* CHAPTER 02 — the people who worry. Two phones, the light drawn as a thread. */
 .vhome .people .sec-head{max-width:760px}
-/* no-JS / reduced motion: the pin wrapper makes no box, so the two phones read in flow,
-   both fully visible, no cylinder. The .js-motion block below turns on the pin+cylinder. */
-.vhome .people-pin{display:contents}
-.vhome .people-stage{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center}
-/* s30: lavender + rose stage so both phones read as warm, lifted objects */
-.vhome .people-stage .glow{width:min(820px,94vw);height:560px;left:50%;top:50%;transform:translate(-50%,-50%);
-  background:radial-gradient(circle at 42% 46%,rgba(138,90,143,.30),rgba(138,90,143,.09) 42%,transparent 68%),radial-gradient(circle at 60% 56%,rgba(198,153,122,.26),rgba(198,153,122,.08) 44%,transparent 68%);filter:blur(60px)}
-.vhome .phones{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:clamp(28px,6vw,64px);z-index:2}
-.vhome .pcyl-slot{display:flex;justify-content:center;align-items:center}
-/* single text (founder 2026-10-12): no exploded-layer lift in this section, and hide the
-   duplicate clipped screenshot bands that drew the doubled "Good evening, Aarohi" etc. */
-.vhome .people .phone{--x:0;transform:none;
-  box-shadow:0 2px 6px rgba(0,0,0,.4),0 22px 46px -16px rgba(0,0,0,.6),0 44px 84px -44px rgba(0,0,0,.7),-26px 22px 60px -46px rgba(138,90,143,.48),24px 18px 56px -46px rgba(198,153,122,.4)}
-.vhome .people img.lift{display:none}
-/* the light-thread connected the old side-by-side pair; a front/back cylinder has no
-   gap to span, so it is hidden here. FOUNDER-TUNABLE (open question): keep the thread? */
-.vhome .people .thread{display:none}
-
-/* ===== JS MOTION: the pin track + cylinder, SAME on laptop and mobile (founder 2026-10-12).
-   The stage sticks in the space BELOW the fixed header (top:--hdr, height:100svh---hdr, set
-   by JS from the live nav height) so the front phone is always fully in view at every window
-   height. JS owns each slot's transform/opacity/z-index from --rot. ===== */
-.js-motion .vhome .people-pin{display:block;position:relative;height:calc(100svh + var(--people-hold))}
-.js-motion .vhome .people-stage{position:sticky;top:var(--hdr,0px);height:calc(100svh - var(--hdr,0px));overflow:hidden;perspective:1600px;flex-direction:row}
-.js-motion .vhome .people .phones{position:absolute;inset:0;transform-style:preserve-3d;gap:0;flex-direction:row;touch-action:pan-y;user-select:none}
-.js-motion .vhome .people .pcyl-slot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);will-change:transform,opacity;backface-visibility:hidden}
-/* MOBILE HEADING + BODY UNIFORMITY (founder 2026-10-12 "all centred" + 2026-10-13 "centre
-   the paragraph text too"). On a phone every section heading AND its body paragraph is centred.
-   Already centred before: section 01 (journey), the people paragraph, the jewellery lede.
-   Newly centred here: the hero heading + hero LEDE paragraph. (The founder-quote paragraph
-   stays left — that was a deliberate earlier decision; flagged for the founder, not changed.) */
-@media(max-width:980px){
-  .vhome .hero .eyebrow{justify-self:center;text-align:center}
-  .vhome .disp-hero{text-align:center}
-  .vhome .hero .lede{text-align:center;margin-left:auto;margin-right:auto} /* s33d founder "text alignment is not correct": the 44ch box itself is centred, not only its text */
-  .vhome .sec-head{display:flex;flex-direction:column;align-items:center;text-align:center;margin-left:auto;margin-right:auto} /* s33d founder "make all the headings aligned": every section head (incl. Good to know) centred, and the head box itself centred */
-  /* "Worn every day" card centred on mobile (founder 2026-10-13): heading, paragraph and the
-     numbered list. (Founder-quote paragraph stays LEFT, founder 2026-10-13 — unchanged.) */
-  .vhome .jewel-copy{text-align:center}
-  .vhome .jewel-copy .rule-dot{margin-left:auto;margin-right:auto}
-  .vhome .jewel-forms li{justify-content:center}
-}
-/* (s32: the old desktop side-by-side swoop is replaced by the cylinder above, which now
-   runs on laptop and mobile alike — founder 2026-10-12.) */
+.vhome .people-stage{position:relative;display:flex;justify-content:center;align-items:center}
+.vhome .people-stage .glow{width:min(760px,92vw);height:520px;left:50%;top:50%;transform:translate(-50%,-50%)}
+.vhome .phones{position:relative;display:flex;justify-content:center;align-items:center;gap:clamp(40px,9vw,132px);z-index:2}
+.vhome .phones .phone{transform:scale(.9);margin:-30px -14px} /* scale(.9) of 290x600: negative margins make layout = visual, no slack */
+.vhome .phones #phone-her{transform:rotateY(6deg) scale(.9)}
+.vhome .phones #phone-guardian{transform:rotateY(-6deg) scale(.9)}
 /* the thread spans exactly the gap between the two phones (same clamp as .phones gap),
    so it starts and ends at a phone edge and never crosses a text box (D13). */
 .vhome .thread{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:clamp(40px,9vw,132px);height:120px;overflow:visible;z-index:3;pointer-events:none}
-.vhome .thread path{fill:none;stroke:var(--rose);stroke-width:2.6;stroke-linecap:round;filter:drop-shadow(0 0 4px rgba(198,153,122,.85)) drop-shadow(0 0 12px rgba(198,153,122,.55));stroke-dasharray:1}
+.vhome .thread path{fill:none;stroke:var(--rose);stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(198,153,122,.7));stroke-dasharray:1}
 .vhome .thread .pulse{fill:var(--rose);filter:drop-shadow(0 0 6px rgba(198,153,122,.9))}
 .js-motion .vhome .thread path{stroke-dashoffset:1}
 .vhome .people-stage.in .thread path{stroke-dashoffset:0;transition:stroke-dashoffset .8s ease .25s}
-.vhome .people-body{margin:40px auto 0;max-width:55ch;text-align:center;color:var(--ground-dim);font-size:clamp(16px,1.5vw,18px);line-height:1.62}/* centred under the centred phones, one block (founder s28 C4) */
-/* s33d founder: section 2 paragraph white, serif at body size ("Serif, body size"); above the
-   carousel on phones; on wide screens a left rail beside the carousel that stays in view while the
-   section holds (sticky), like section 1's text rail beside the film. */
-.vhome .people .people-body{font-family:var(--serif);font-size:clamp(19px,1.6vw,22px);line-height:1.5;color:var(--ground-ink);margin:0 auto 8px}
-@media(min-width:981px){
-  /* s33d founder "moving up and down on scroll" + "move phone up, align it similar to mobile in section 1":
-     heading + paragraph are ONE rail that holds in place exactly as long as the carousel holds (same grid
-     row), centred in the space under the nav like section 1; the carousel starts at the section top. */
-  .vhome .people > .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:48px;grid-template-areas:"rail pin"}
-  .vhome .people .people-rail{grid-area:rail;align-self:start;position:sticky;top:var(--nav-h,72px);height:calc(100svh - var(--nav-h,72px));display:flex;flex-direction:column;justify-content:center}
-  .vhome .people .sec-head{margin-bottom:clamp(16px,3svh,32px)}
-  .vhome .people .people-body{margin:0;max-width:40ch;text-align:left}
-  .vhome .people .people-pin{grid-area:pin;min-width:0}
-  .vhome .people-stage .glow{width:min(820px,100%)} /* the glow must fade out INSIDE the narrower stage, or the stage edge cuts it into a visible box */
-}
-@media(min-width:1024px){.vhome .people > .wrap{grid-template-columns:minmax(0,520px) minmax(0,1fr);column-gap:clamp(40px,5vw,96px)}}
+.vhome .people-body{margin:40px 0 0;max-width:60ch;text-align:left;color:var(--ground-dim);font-size:clamp(16px,1.5vw,18px);line-height:1.62}
 
 /* CHAPTER 03 — the warm act: what is coming, in real photography */
 .vhome .later .sec-head{max-width:640px}
-/* s30: the jewellery is the quiet "and later" act now, not a full-width hero band.
-   It sits on a small inset card on the cream, photos ~60% of the old size, so the
-   app sections above carry the page and the jewellery reads as a calm footnote. */
-.vhome .jewel-hero{position:relative;display:flex;justify-content:center;align-items:center;margin:8px auto 0;max-width:620px;min-height:auto;padding:36px 28px;background:var(--cream-2);border:1px solid var(--cream-line);border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 18px 44px -34px rgba(42,33,54,.35)}
-.vhome .jewel-hero .glow{width:min(360px,72%);height:min(360px,72%);left:50%;top:52%;transform:translate(-50%,-50%);z-index:3;mix-blend-mode:multiply;
-  background:radial-gradient(circle,rgba(198,153,122,.30),rgba(198,153,122,.11) 44%,transparent 68%);filter:blur(42px)}
+.vhome .jewel-hero{position:relative;display:flex;justify-content:center;align-items:center;margin-top:8px;min-height:min(72vh,720px)}
+.vhome .jewel-hero .glow{width:min(680px,86vw);height:min(680px,86vw);left:50%;top:52%;transform:translate(-50%,-50%);z-index:3;mix-blend-mode:multiply;
+  background:radial-gradient(circle,rgba(198,153,122,.32),rgba(198,153,122,.12) 44%,transparent 68%);filter:blur(52px)}
 /* the photo keeps its own ground, which IS the act ground (#F8F7F3), so there is no
    edge to hide; the light sits on top (multiply) so it is continuous across the
    photo edge. No blend/shadow on the img: a drop-shadow on an opaque photo draws
    the rectangle (D13). */
-.vhome .jewel-hero img{position:relative;z-index:2;width:min(330px,62%);height:auto}
-
-/* s31: founder-approved jewellery swipe (v3), ported from innaya-jewel3d-preview.html.
-   One piece in front in true colour, neighbours turned and receding; native scroll-snap,
-   no carousel chrome; full-bleed with soft faded sides so neighbours drift out of view
-   instead of being cut by a frame edge. Scroll-driven 3D enhanced in CampaignMotion;
-   reduced-motion flattens it (rule below). Breakout is caught by .vhome overflow-x:clip. */
-.vhome .jewel-strip{width:100vw;margin:26px 0 4px calc(50% - 50vw);overflow-x:auto;overflow-y:hidden;
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);
-          mask-image:linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);
-  scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:contain;perspective:1100px;cursor:grab;outline:none}
-.vhome .jewel-strip::-webkit-scrollbar{display:none}
-.vhome .jewel-strip.drag{cursor:grabbing;scroll-snap-type:none}
-.vhome .jewel-strip:focus-visible{box-shadow:inset 0 0 0 2px var(--plum)}
-.vhome .jewel-track{display:flex;width:max-content;--sw:min(62vw,340px);
-  padding-inline:calc((100% - var(--sw)) / 2);transform-style:preserve-3d}/* 100% = strip width (JS sets it to the scrollbar-free content width), so the end pieces always centre */
-/* s33e: width as well as flex-basis: Firefox sizes the max-content track from the slides' content width, which cut the scroll range and left the strip stuck between pieces */
-.vhome .jewel-slide{flex:0 0 var(--sw);width:var(--sw);scroll-snap-align:center;height:clamp(320px,52svh,460px);
-  display:flex;align-items:center;justify-content:center;transform-style:preserve-3d}
-.vhome .jewel-piece{position:relative;will-change:transform,opacity;transform-origin:50% 60%;
-  filter:drop-shadow(0 3px 3px rgba(60,40,30,.12));--h:clamp(220px,40svh,380px)}
-.vhome .jewel-piece img{display:block;height:var(--h);width:auto;max-width:calc(var(--sw) - 12px);
-  object-fit:contain;-webkit-user-drag:none;user-select:none;pointer-events:none}
-/* s33d founder: on a small screen "user wont know there are more jewellery options" -> founder
-   "Show more of neighbours": narrower slots (46vw; >=740px keeps the 340px cap, unchanged) and a
-   softer edge fade, so about a quarter of each side piece peeks in. */
-@media(max-width:739px){
-  .vhome .jewel-track{--sw:46vw}
-  .vhome .jewel-strip{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
-          mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%)}
-}
-.vhome .jewel-piece .floor{position:absolute;left:50%;bottom:-3%;transform:translateX(-50%);
-  width:82%;height:11%;border-radius:50%;z-index:-1;
-  background:radial-gradient(50% 50% at 50% 50%,rgba(60,40,28,.30),rgba(60,40,28,0) 72%);filter:blur(5px)}
-.vhome .jewel-piece .sheen{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
-  -webkit-mask:var(--maskimg) center/contain no-repeat;mask:var(--maskimg) center/contain no-repeat;
-  background:linear-gradient(115deg,transparent 38%,rgba(255,250,244,0) 44%,rgba(255,252,247,.38) 50%,
-    rgba(255,250,244,0) 56%,transparent 62%);background-size:260% 100%;background-position:120% 0;opacity:.9}
-
-.vhome .jewel-line{margin:16px auto 0;max-width:55ch;text-align:center}/* centred directly under the centred locket, same centre line (founder s28 C4) */
-/* s31: big kada (founder "the kada image big"). Single column, the kada photo large
-   above its copy (was a small 260px photo in a 2-col row). Kept on its cream card. */
-.vhome .jewel-worn{margin:28px auto 0;max-width:620px;display:grid;grid-template-columns:1fr;gap:24px}/* founder s31: no background card, kada photo and copy sit directly on the cream */
-.vhome .jewel-worn figure{margin:0 auto;position:relative;width:100%;max-width:560px;aspect-ratio:4/3;border-radius:14px;overflow:hidden;box-shadow:0 24px 50px -30px rgba(60,40,30,.5)}
-.vhome .jewel-worn img,.vhome .jewel-worn video{width:100%;height:100%;object-fit:cover;display:block}
-.vhome .jewel-copy{max-width:44ch;margin:0 auto;width:100%} /* copy centred under the big kada */
-/* below the 2-col breakpoint the copy is the full content column, not a 36ch
-   ribbon that left the right third empty (founder s28 C3, defect 8) */
+.vhome .jewel-hero img{position:relative;z-index:2;width:min(560px,82vw);height:auto}
+.vhome .jewel-line{margin:8px auto 0;max-width:60ch;text-align:center}
+.vhome .jewel-worn{margin-top:80px;display:grid;grid-template-columns:minmax(0,6fr) minmax(0,6fr);gap:clamp(24px,5vw,64px);align-items:center}
+.vhome .jewel-worn figure{margin:0;position:relative}
+.vhome .jewel-worn img{width:100%}
+.vhome .jewel-copy{max-width:36ch} /* widened from 30ch so the right column does not read empty (founder 2026-10-03) */
 .vhome .jewel-copy .rule-dot{width:64px;margin-bottom:24px}
 .vhome .jewel-copy h3{font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(32px,3.6vw,48px);line-height:1.1;color:var(--cream-ink);margin:0 0 16px}
 .vhome .jewel-copy p{font-family:var(--sans);font-size:18px;line-height:1.6;color:var(--cream-dim)}
 /* the forms that are coming, from claims already on the page (no new promises) */
-.vhome .jewel-forms{list-style:none;margin:24px 0 0;padding:24px 0 0;border-top:1px solid var(--cream-line);display:grid;gap:16px}/* 24 top / 16 gap (8-pt): numerals sat too near the divider, founder s28 C3 */
-.vhome .jewel-forms li{display:flex;align-items:baseline;gap:16px;font-family:var(--sans);font-size:clamp(15px,1.5vw,16px);line-height:1.4;color:var(--cream-ink)}/* 16 numeral->text, same scale (s28 C4) */
+.vhome .jewel-forms{list-style:none;margin:24px 0 0;padding:20px 0 0;border-top:1px solid var(--cream-line);display:grid;gap:14px}
+.vhome .jewel-forms li{display:flex;align-items:baseline;gap:14px;font-family:var(--sans);font-size:clamp(15px,1.5vw,16px);line-height:1.4;color:var(--cream-ink)}
 .vhome .jewel-forms .d{font-family:var(--serif);font-style:italic;font-weight:400;font-size:14px;color:var(--plum);flex:none;min-width:1.6em;font-variant-numeric:tabular-nums}
 
 /* founder's why — editorial pull quote on cream, framed by the light */
 .vhome .why{padding-bottom:48px}
-.vhome .why .fq{max-width:720px;margin:0 auto;text-align:left}/* the whole quote block centred on the page (founder s28 C4). Text kept left
-   inside: this is a long multi-line paragraph, and centred long text reads
-   ragged on both edges and is harder to follow than a left-aligned column. The
-   rule-dot frames and the cite stay left too, so they line up under the text. */
-.vhome .why .fq .rule-dot{margin:0 0 40px;width:120px}
-.vhome .why .fq .rule-dot.b{margin:40px 0 0}
+.vhome .why .fq{max-width:720px;margin:0 auto;text-align:center}
+.vhome .why .fq .rule-dot{margin:0 auto 40px;width:120px}
+.vhome .why .fq .rule-dot.b{margin:40px auto 0}
 .vhome .why .fq p{font-family:var(--serif);font-weight:300;font-size:clamp(23px,2.5vw,31px);line-height:1.5;color:var(--cream-ink);margin:0}
 .vhome .why .fq cite{display:block;font-style:normal;margin-top:0;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--plum)}
 .vhome .why .fq .rule-dot.b + cite{margin-top:24px}
@@ -550,7 +333,7 @@ html{background:#17111F}
    (>=40px at 1280, >=24px at 390). No bleed, no negative margins (founder s26). */
 .vhome footer{position:relative;padding:80px 0 40px;border-top:1px solid var(--ground-line);background:var(--ground);color:var(--ground-ink)}
 .vhome .foot-grid{display:flex;justify-content:space-between;align-items:baseline;gap:24px;margin-bottom:56px}
-.vhome footer .fine{font-size:17px;line-height:1.5;color:rgba(241,236,226,.78);max-width:720px;margin:0} /* cream 70%: 8:1 on the ground. 15px + 640px: the line ("...Coming soon.", ~62 chars ~500px) fits on ONE line at 1280+ (was 14px/420px, which forced two lines even at 1800, founder s28 C4). It wraps to two lines only once the column narrows below ~700px. */
+.vhome footer .fine{font-size:14px;line-height:1.4;color:rgba(241,236,226,.7);max-width:420px;margin:0} /* cream 70%: 8:1 on the ground */
 .vhome .foot-grid .nav-cta{flex:none}
 .vhome .foot-emblem{display:flex;justify-content:center;margin:0 0 28px}
 .vhome .foot-emblem img{width:clamp(88px,12vw,120px);height:auto}
@@ -569,17 +352,25 @@ html{background:#17111F}
   .vhome .disp-hero{order:2;margin-bottom:0}
   .vhome .hero .lede{order:3;margin-bottom:0}
   .vhome .hero-object{order:4;margin:16px 0 4px;height:auto;align-items:center}
-  .vhome .wl{order:5;margin-top:8px;justify-self:center;width:100%} /* centred on the page in one column (founder s33c "not centered") */
+  .vhome .wl{order:5;margin-top:8px}
   .vhome .hero-emblem img{width:clamp(200px,52vw,260px)}
   .vhome .chapno{display:none} /* desktop flourish only; on a phone it would sit on the object */
+  /* story becomes the self-advancing carousel: no pin, no dead scroll, header kept */
+  .js-motion .vhome .seq{height:auto}
+  .vhome .app-seq{padding:64px 0}
+  .vhome .seq-pin{position:static;height:auto;overflow:visible;padding:0;display:block}
+  .vhome .stage-grid{display:block}
+  .vhome .stage-object,.vhome .beats,.vhome .seq-counter{display:none}
+  .vhome .stage-copy{width:100%}
+  .vhome .beats-mobile{display:block;margin-top:24px;padding:0}
   .vhome .jewel-worn{grid-template-columns:1fr;gap:24px}
-  .vhome .jewel-copy{max-width:none} /* 1-col: copy fills the column, no 36ch ribbon (defect 8) */
-  /* (s32: the mobile people-pin + stacked-phone rules were replaced by the unified
-     cylinder carousel above, which pins and sizes itself the same on laptop and mobile
-     — founder 2026-10-12.) */
   /* collapse the stacked bottom/top padding between the jewellery act and the
      founder-quote act into one gap (founder 2026-10-03) */
   .vhome .later{padding-bottom:0}
+  .vhome .phones{flex-direction:column;gap:64px}
+  .vhome .phones #phone-her,.vhome .phones #phone-guardian{transform:scale(.78);margin:-66px -32px} /* scale(.78) slack removed */
+  .vhome .thread{width:64px;height:120px;transform:translate(-50%,-50%) rotate(90deg)} /* runs top phone -> bottom phone across the 64px gap */
+  .vhome .people-stage{min-height:0}
 }
 @media(max-width:600px){
   .vhome .sec{padding:64px 0}
@@ -589,69 +380,33 @@ html{background:#17111F}
   .vhome footer{padding:64px 0 24px}
   .vhome .foot-grid{flex-direction:column;align-items:flex-start;gap:16px;margin-bottom:40px}
   .vhome .foot-grid .nav-cta{display:inline-block}
-  .vhome .jewel-hero img{width:min(240px,66%)}
-  .vhome .jewel-hero .glow{width:min(260px,78%);height:min(260px,78%)}
+  .vhome .jewel-hero img{width:min(360px,80vw)}
+  .vhome .jewel-hero .glow{width:min(420px,90vw);height:min(420px,90vw)}
+}
+@media (min-width:981px) and (max-height:700px){
+  /* a short desktop window cannot hold the phone + copy in one 100vh pin: run act
+     01 as a plain section, every step visible in flow, the phone's first pane shown
+     (pane 0 keeps the server .on; JS skips the scrubber below 701px, so the sticky
+     phone can never cover the step list or counter). */
+  .js-motion .vhome .seq{height:auto}
+  .vhome .seq-pin{position:static;height:auto;overflow:visible;padding:48px 0}
+  .js-motion .vhome .beat{opacity:1}
 }
 @media (prefers-reduced-motion:reduce){
   .js-motion .vhome .reveal{opacity:1;transform:none;transition:none}
   .vhome .people-stage.in .thread path{transition:none}
-  /* reduced motion (founder 2026-10-13: "carousel, no animation"): the SAME cylinder
-     carousel runs (pin + her front + side phone peeking); the JS switches phones INSTANTLY
-     with no turn and no swoop. So the cylinder CSS above is kept here (no overrides); only
-     transitions are killed. */
   .vhome .phone,.vhome .nav-cta,.vhome .wl .btn{transition:none}
-  /* no swoop, no scroll-linked motion: the phones rest at the settled front pose
-     (--p 1, the default) and the screen layers sit in the settled exploded state
-     (--x ~.5) so the scene is still dimensional, just static. No --x transition. */
-  .vhome .phone{--x:.5}
-  .vhome .lift{will-change:auto}
+  .vhome .app-seq .pane,.vhome .app-seq .pane.on,.vhome .beat,.vhome .vcard[data-beat="0"],.vhome .cdot .fill{transition:none}
   .vhome .spin{animation:none}
-  /* jewellery swipe at rest: pieces flat and full-colour, no sheen; strip still swipes */
-  .vhome .jewel-piece{transform:none !important;opacity:1 !important}
-  .vhome .jewel-piece .sheen{opacity:0 !important}
-  .vhome .jewel-strip{scroll-behavior:auto}
+  /* reduced motion: the desktop scrubber is disabled in JS (no pin dead-scroll),
+     so flatten the stage to a plain section with every step visible and the first
+     pane shown (pane 0 keeps the server .on). The mobile carousel keeps its markup
+     and dots but does not autoplay or pop (handled in JS). */
+  .js-motion .vhome .seq{height:auto}
+  .vhome .seq-pin{position:static;height:auto;overflow:visible;padding:64px 0}
+  .js-motion .vhome .beat{opacity:1}
+  .vhome .beats-carousel.pre .vcard[data-beat="0"]{opacity:1;transform:none}
 }
-
 
 .vhome .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-/* =========================================================================
-   DESKTOP LAYOUT (>= 1024px) — "ab1" default (merged from worktree s32ab,
-   branch feat/campaign-layout-ab, founder 2026-10-12). Replaces the old a/b/c
-   ?layout= harness. A fluid content box min(1440, 100% - 2*gutter) centred by the
-   base margin:auto; hero + journey as a left copy rail beside a centred visual
-   zone; text sections at a comfortable reading width. Below 1024px is unchanged;
-   the people cylinder, jewellery, mobile centring and lift-hiding are untouched.
-   ========================================================================= */
-@media(min-width:1024px){
-  /* fluid content box: min(1440, 100% - 2*gutter), centred by the base margin:auto.
-     padding set to 0 here so the gutter is exactly the clamp (no extra inset). */
-  .vhome .wrap,
-  .vhome .nav-inner{max-width:min(1440px, 100% - 2 * clamp(32px,5vw,96px));padding-left:0;padding-right:0}
-
-  /* HERO: copy rail left, emblem centred in a wide right zone */
-  .vhome .hero-grid{grid-template-columns:minmax(0,520px) minmax(0,1fr);gap:clamp(40px,5vw,96px)}
-  .vhome .hero-copy{max-width:520px}
-  /* emblem centred in its area; sized from the available viewport HEIGHT so on short
-     windows it stays fully visible and is never cut off, capped at 520px on tall ones. */
-  .vhome .hero-emblem img{width:min(clamp(320px,34vw,520px), calc(100vh - 150px))}
-
-
-  /* text sections centred at a comfortable reading width */
-  .vhome .later .sec-head{max-width:860px}
-  .vhome .jewel-worn{max-width:980px}
-  .vhome .why .fq{max-width:800px}
-  .vhome .faq{max-width:900px}
-}
-
-/* SHORT desktop windows (founder 2026-10-12: "everything should adjust ... as per the
-   screen size": emblem fully visible, sized from the height available below the header,
-   not cut off, no large empty band above it). Drop the forced 100vh hero, anchor both
-   columns to the top so the emblem sits just below the header with no band above, and
-   size the emblem to the available viewport height so it is never cut off. */
-@media(min-width:1024px) and (max-height:760px){
-  .vhome .hero{min-height:auto;padding-top:clamp(56px,8vh,88px);padding-bottom:36px}
-  /* s33d founder "this is how I want it": the logo stays centred against the text + card on short windows too (2026-10-12 top-anchoring of the emblem dropped) */
-  .vhome .hero-emblem img{width:min(clamp(320px,34vw,520px), calc(100vh - 170px))}
-}
 

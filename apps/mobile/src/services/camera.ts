@@ -16,6 +16,7 @@ import { post } from "../lib/api";
 import { events } from "../lib/events";
 import { useJourney } from "../store/journey";
 import { getMasker } from "./sensors/masker";
+import { frameQueue } from "./frameQueue";
 // Task 26b (R42): the native lane is built on EAS. Importing skiaMasker for its
 // side effect swaps the fail-closed NoopMasker for the real Skia + ML Kit masker
 // (ADR-019 / R36). The three native deps are lazy-required inside functions, so
@@ -137,6 +138,7 @@ export const camera = {
         timer = setTimeout(loop, CAMERA_MOUNT_RETRY_MS);
         return;
       }
+      void frameQueue.drain(); // never holds up this capture; never rejects
       const st = useJourney.getState();
       // J2: the current pipeline stage, so a failure names exactly where it died
       // (both in the [frame] warn line and the one-per-journey frame_pipeline row).
@@ -177,13 +179,24 @@ export const camera = {
         console.log("[frame] masked ok", JSON.stringify({ ...masked.counts, degraded: masked.degraded }));
 
         stage = "upload";
-        const path = `${journeyId}/${Date.now()}.jpg`;
+        const capturedAt = Date.now();
+        const path = `${journeyId}/${capturedAt}.jpg`;
         // H1: decode the masked base64 to bytes and upload those directly. The old
         // `fetch(masked.maskedUri).blob()` failed on-device every frame because
         // Android's native fetch rejects `data:` URLs (MalformedURLException:
         // unknown protocol: data), so events.model_call stayed 0 all-time.
         const bytes = toByteArray(masked.base64);
-        await uploadWithRetry(path, bytes);
+        try {
+          await uploadWithRetry(path, bytes);
+        } catch (e) {
+          // Founder Q117: no network, so keep the masked frame (never a raw one) on the phone
+          // and send it later. A server refusal stays dropped: a retry could not help. Only
+          // during an alarm: a calm trip uses no memory on her phone.
+          const alarmNow = ["EMERGENCY", "CRITICAL", "CANCEL_HOLD"].includes(useJourney.getState().ctx.state);
+          if (alarmNow && !String((e as Error)?.message).includes("rejected"))
+            await frameQueue.add({ journeyId, path, ts: capturedAt, base64: masked.base64, meta: { counts: masked.counts, degraded: masked.degraded, plate: masked.plateText } });
+          throw e;
+        }
         if (!running || my !== epoch) return;
         console.log("[frame] uploaded ok", JSON.stringify({ bytes: bytes.length, path }));
         useJourney.getState().set({ camLastFrameAt: Date.now() }); // F3: last frame reached the server

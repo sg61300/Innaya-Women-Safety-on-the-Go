@@ -21,7 +21,6 @@ import {
   initialContext,
   RECONFIRM_MS,
   SOS_SIREN_DELAY_MS,
-  CANCEL_GUARDIAN_MS,
   type ProtocolEvent,
   type Action,
   type DangerScore,
@@ -32,6 +31,8 @@ import { useJourney, type Challenge, type ChallengeUiKind } from "../store/journ
 import { post } from "../lib/api";
 import { events } from "../lib/events";
 import i18n from "../i18n";
+import { eventOutbox, isFinalRefusal } from "./eventOutbox";
+import { cancelOfflineMarker } from "./cancelOfflineMarker";
 import type { location as LocationSvc } from "./location";
 import type { camera as CameraSvc } from "./camera";
 import type { siren as SirenSvc } from "./siren";
@@ -87,7 +88,7 @@ const safe = (fn: () => unknown, what: string): Promise<void> => {
 };
 
 export function createRunner(opts: RunnerOpts = {}) {
-  const t: Partial<Record<"speak" | "crit" | "arrival" | "reconfirm" | "arm" | "siren" | "cancel", ReturnType<typeof setTimeout>>> = {};
+  const t: Partial<Record<"speak" | "crit" | "arrival" | "reconfirm" | "arm" | "siren", ReturnType<typeof setTimeout>>> = {};
   let nudge: ReturnType<typeof setInterval> | null = null;
   let lastConfirmAt = 0;
   let arrivalFired = false;
@@ -226,6 +227,11 @@ export function createRunner(opts: RunnerOpts = {}) {
     }
   }
 
+  // M1: the loop only starts on a live transition, so a restart while waiting or quiet needs it.
+  const startPhotos = async (id: string) => {
+    if (!store().camRunning) await safe(() => svc.camera.start(id, () => {}), "camera.start");
+  };
+
   async function effect(a: Action, reason: string) {
     switch (a) {
       case "SHARE_LOCATION":
@@ -253,7 +259,8 @@ export function createRunner(opts: RunnerOpts = {}) {
         openChallenge("arrival", reason, true);
         break;
       case "SIREN_ON":
-        if (!practice) await safe(() => svc.siren.start(), "siren.start");
+        // Whatever asked for it (a server reply included): silent stays silent.
+        if (!practice && store().ctx.alarmMode !== "silent") await safe(() => svc.siren.start(), "siren.start");
         break;
       case "SIREN_OFF":
         await safe(() => svc.siren.stop(), "siren.stop");
@@ -319,17 +326,9 @@ export function createRunner(opts: RunnerOpts = {}) {
       }
       await effect(a, r.reason);
     }
-    // ADR-043 rule 7: a cancel request opens the 30 s guardian window. No answer in
-    // that window → CANCEL_TIMEOUT (core re-emits SIREN_ON, so the siren sounds and
-    // the request stays open). The pending SOS-grace siren is cancelled (SIREN_HOLD
-    // already paused any playing siren). Leaving CANCEL_HOLD clears the window.
-    if (ev.type === "CANCEL_REQUESTED") {
-      clearT("siren");
-      clearT("cancel");
-      t.cancel = setTimeout(() => void api.send({ type: "CANCEL_TIMEOUT" }), CANCEL_GUARDIAN_MS);
-    } else if (before.state === "CANCEL_HOLD" && r.ctx.state !== "CANCEL_HOLD") {
-      clearT("cancel");
-    }
+    // Fix AD round 2: a cancel request cancels the pending SOS-grace siren (SIREN_HOLD
+    // already paused any playing siren). The retry clock runs on the server.
+    if (ev.type === "CANCEL_REQUESTED") clearT("siren");
     let id = jid();
     // J2: SOS / an emergency word from Home enters CRITICAL with no journey, so the
     // POST below would be skipped and guardians never alerted (while the overlay
@@ -347,8 +346,22 @@ export function createRunner(opts: RunnerOpts = {}) {
     if (!store().camRunning && (store().ctx.state === "EMERGENCY" || store().ctx.state === "CRITICAL")) {
       await safe(() => svc.camera.start(String(id), () => {}), "camera.start");
     }
+    // H1: what raises an alarm, and the emergency word, are saved on the phone before the post
+    // and delivered in order until the server has them.
+    const durable = ev.type === "KEYWORD" || ev.type === "SOS" || (r.ctx.state !== before.state && (r.ctx.state === "CRITICAL" || r.ctx.state === "EMERGENCY"));
+    if (ev.type === "KEYWORD" && before.cancelWaiting) {
+      const m = await cancelOfflineMarker.read();
+      if (m) await cancelOfflineMarker.save({ ...m, quiet: true });
+    }
+    const queued = durable ? await eventOutbox.add({ journeyId: id, kind: "event", event: ev }, true) : null;
+    if (queued && (await eventOutbox.hasEarlier(queued))) {
+      eventOutbox.release(queued);
+      void eventOutbox.deliver();
+      return;
+    }
     try {
       const srv = await post<ServerReply>("/api/journey-state", { journeyId: id, event: ev });
+      if (queued) await eventOutbox.remove(queued);
       if (!srv) return;
       const cur = store().ctx;
       if (srv.state && srv.state !== "RESOLVED" && rank(srv.state) > rank(cur.state)) {
@@ -366,6 +379,8 @@ export function createRunner(opts: RunnerOpts = {}) {
       }
     } catch (e) {
       console.warn("[runner] server unreachable, local authority", (e as Error)?.message);
+      if (queued && isFinalRefusal(e)) await eventOutbox.remove(queued);
+      else if (queued) eventOutbox.release(queued);
     }
   }
 
@@ -516,14 +531,41 @@ export function createRunner(opts: RunnerOpts = {}) {
     //    asked anything. No-op when unauthenticated or in practice mode.
     async reconcile() {
       if (practice) return;
+      // Founder Q117: offline photos go up once there is a network, even after the trip.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      void safe(() => (require("./frameQueue") as typeof import("./frameQueue")).frameQueue.drain(), "frameQueue.drain");
       try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { supabase } = require("../lib/supabase");
+        // Before anything that needs the network: the correct word given offline survives
+        // the app being killed. Read from the phone alone, so it works with no signal.
+        if (!store().journey) {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const { cancelOfflineMarker } = require("./cancelOfflineMarker") as typeof import("./cancelOfflineMarker");
+          const m = await cancelOfflineMarker.read();
+          if (m) {
+            const { data: sess } = await supabase.auth.getSession();
+            if ((sess as { session?: { user?: { id?: string } } | null } | null)?.session?.user?.id === m.owner_id) {
+              store().set({ journey: { ...m }, ctx: { ...initialContext(), state: "CRITICAL", alarmMode: m.alarm_mode ?? "siren", ...(m.quiet ? { quietAlarm: true } : { cancelWaiting: true }) }, cancelOffline: !m.quiet, challenge: null, lastScore: 0, expiry: null });
+              void log("cancel_offline_restored", { journeyId: m.id, quiet: !!m.quiet });
+              await safe(() => svc.location.start(), "location.start");
+              await safe(() => svc.feeds.attach(), "feeds.attach");
+              await startPhotos(m.id); // M1
+            } else {
+              await cancelOfflineMarker.clear();
+            }
+          }
+        }
+        // H1: whatever a killed app still owes the server, even with nothing else to adopt.
+        void safe(() => eventOutbox.deliver(), "eventOutbox.deliver");
         const { data: auth } = await supabase.auth.getUser();
         const user = (auth as { user?: { id: string } } | null)?.user;
         if (!user) return;
         const local = store().journey as { id?: string } | null;
         const st = store().ctx.state;
+        // Fix AD round 2: while a guardian cancel waits, expiry must not disturb her
+        // screen; the offline retry still goes through after it. M3: nor a quiet alarm's.
+        if (local?.id && (store().ctx.cancelWaiting || store().ctx.quietAlarm)) return;
         if (local?.id && (st === "EMERGENCY" || st === "CRITICAL")) {
           const { data: srv } = await supabase.from("journeys").select("status").eq("id", local.id).maybeSingle();
           const status = (srv as { status?: string } | null)?.status;
@@ -534,7 +576,7 @@ export function createRunner(opts: RunnerOpts = {}) {
           return;
         }
         if (!local?.id) {
-          const { data: j } = await supabase
+          const { data: live } = await supabase
             .from("journeys")
             .select("*")
             .eq("owner_id", user.id)
@@ -542,6 +584,21 @@ export function createRunner(opts: RunnerOpts = {}) {
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
+          let j = live;
+          // A cancel still waiting on guardians outlives expiry (the clock keeps asking),
+          // so a restart picks it up too, with the verdict watch and the question.
+          if (!j) {
+            const { data: waiting } = await supabase
+              .from("cancel_requests")
+              .select("journey_id")
+              .eq("owner_id", user.id)
+              .is("resolved_at", null)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            const waitingId = (waiting as { journey_id?: string } | null)?.journey_id;
+            if (waitingId) ({ data: j } = await supabase.from("journeys").select("*").eq("id", waitingId).eq("status", "expired").maybeSingle());
+          }
           if (!j) return;
           const { data: stRow } = await supabase
             .from("journey_state")
@@ -551,14 +608,38 @@ export function createRunner(opts: RunnerOpts = {}) {
             .limit(1)
             .maybeSingle();
           const adopted = ((stRow as { state?: ProtocolState } | null)?.state as ProtocolState) ?? "SAFE";
-          store().set({ journey: j, ctx: { ...initialContext(), state: adopted }, challenge: null, lastScore: 0, expiry: null });
+          // Fix AD round 2: a restart during a guardian cancel keeps her screen normal.
+          const { data: openReq } = adopted === "CRITICAL" || adopted === "CANCEL_HOLD"
+            ? await supabase.from("cancel_requests").select("id").eq("journey_id", (j as { id: string }).id).is("resolved_at", null).limit(1).maybeSingle()
+            : { data: null };
+          // Founder Q116: closed by the emergency word stays quiet across a restart.
+          const { data: lastReq } = adopted === "CRITICAL" && !openReq
+            ? await supabase.from("cancel_requests").select("verdict").eq("journey_id", (j as { id: string }).id).order("created_at", { ascending: false }).limit(1).maybeSingle()
+            : { data: null };
+          const quiet = (lastReq as { verdict?: string } | null)?.verdict === "distress";
+          store().set({ journey: j, ctx: { ...initialContext(), state: adopted, alarmMode: (j as { alarm_mode?: "siren" | "silent" | null }).alarm_mode ?? "siren", ...(openReq ? { cancelWaiting: true } : {}), ...(quiet ? { quietAlarm: true } : {}) }, challenge: null, lastScore: 0, expiry: null });
           void log("journey_adopted", { journeyId: (j as { id: string }).id, state: adopted });
           await safe(() => svc.location.start(), "location.start"); // heartbeats + audio + keyword
           await safe(() => svc.feeds.attach(), "feeds.attach"); // camera mounts via ActiveJourneyCamera
+          if (openReq || quiet) await startPhotos((j as { id: string }).id); // M1
         }
       } catch (e) {
         console.warn("[runner] reconcile failed", (e as Error)?.message);
       }
+    },
+    // M6: 2 Not safe overturned a Safe; the server is already CRITICAL and guardians told, so
+    // nothing is posted. The alarm comes back as decided: at once, silent stays silent.
+    adoptOverturn(): Promise<void> {
+      const p = queue.then(async () => {
+        const before = store().ctx;
+        if (before.state !== "RESOLVED_MONITORING") return;
+        const r = transition(before, { type: "SOS", mode: before.alarmMode });
+        store().set({ ctx: r.ctx, cancelApproved: false });
+        void log("overturn_adopted", { mode: before.alarmMode });
+        for (const a of r.actions) await effect(a, "overturn");
+      });
+      queue = p.catch((e) => console.warn("[runner] overturn failed", (e as Error)?.message));
+      return p;
     },
     // Re-open the expiry are-you-safe from the ExpiryNotice banner.
     openExpiryChallenge() {
@@ -585,7 +666,6 @@ export function createRunner(opts: RunnerOpts = {}) {
       clearT("reconfirm");
       clearT("arm");
       clearT("siren");
-      clearT("cancel");
       if (nudge) clearInterval(nudge);
       nudge = null;
       void safe(() => svc.feeds.detach(), "feeds.detach");

@@ -31,8 +31,8 @@ test("ADR-039/040 constants", () => {
   expect(STATIONARY_T1_MS).toBe(15 * 60_000); expect(STATIONARY_T2_MS).toBe(30 * 60_000); expect(STATIONARY_MAX_DEFER_MS).toBe(60 * 60_000);
   expect(ROUTE_REROUTE_MS).toBe(120_000); expect(ROUTE_OFF_M).toBe(300); expect(ROUTE_ETA_FACTOR).toBe(1.3);
 });
-import { SOS_MODE_CHOICE_MS, SOS_SIREN_DELAY_MS, CANCEL_GUARDIAN_MS, CANCEL_PASSWORD_LOCK_MS } from "../timers";
+import { SOS_MODE_CHOICE_MS, SOS_SIREN_DELAY_MS, CANCEL_PASSWORD_LOCK_MS } from "../timers";
 test("ADR-043 cancel/SOS-mode timers", () => {
   expect(SOS_MODE_CHOICE_MS).toBe(10_000); expect(SOS_SIREN_DELAY_MS).toBe(10_000);
-  expect(CANCEL_GUARDIAN_MS).toBe(30_000); expect(CANCEL_PASSWORD_LOCK_MS).toBe(30_000);
+  expect(CANCEL_PASSWORD_LOCK_MS).toBe(30_000);
 });

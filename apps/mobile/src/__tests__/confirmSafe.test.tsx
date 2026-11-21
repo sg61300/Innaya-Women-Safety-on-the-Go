@@ -119,12 +119,11 @@ test("≥ 3 frames unlock She's safe before the 15 s timer", async () => {
   expect(getByTestId("confirm-safe").props.accessibilityState.disabled).toBe(false);
 });
 
-test("back button pops the screen", async () => {
-  const { getByTestId } = await mount(<ConfirmSafe />);
-  await act(async () => {
-    fireEvent.press(getByTestId("confirm-back"));
-  });
-  expect(mockBack).toHaveBeenCalled();
+// Phase 3b (founder 2-a): the in-screen "‹ Back" link was removed; the top-bar
+// arrow is the only back control (its action was the same plain router.back()).
+test("no in-screen back link; the top-bar arrow is the only back control", async () => {
+  const { queryByTestId } = await mount(<ConfirmSafe />);
+  expect(queryByTestId("confirm-back")).toBeNull();
 });
 
 // ADR-043 (s23 I7): a cancel_request push carries the guardian's per-guardian

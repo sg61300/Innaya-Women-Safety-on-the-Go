@@ -10,7 +10,7 @@ test("critical copy and cancel button", async () => {
   const { getByText, queryByText } = await render(<ThemeProvider initial="violetBloom"><EmergencyLayout state="CRITICAL" elapsedS={63} items={items} onCancelPress={onCancel} /></ThemeProvider>);
   await act(async () => {});
   getByText("Help is being called."); getByText("01:03 · Siren on · Max volume"); getByText("Even if this phone dies, your guardians keep getting updates.");
-  fireEvent.press(getByText("I'm safe — cancel")); expect(onCancel).toHaveBeenCalled();
+  fireEvent.press(getByText("I'm safe, cancel")); expect(onCancel).toHaveBeenCalled();
   expect(queryByText(/Police/)).toBeNull();
 });
 // H4: at 320 dp the CRITICAL heading grew to 3 lines and clipped. The title must

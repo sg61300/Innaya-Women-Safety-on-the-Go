@@ -13,7 +13,7 @@ test("renders the lockup with reduce-motion on (static frame)", async () => {
       <BrandLockup />
     </ThemeProvider>
   );
-  getByLabelText("VAIRA");
+  getByLabelText("INNAYA");
 });
 
 test("renders the lockup with reduce-motion off (animated branch)", async () => {
@@ -25,5 +25,5 @@ test("renders the lockup with reduce-motion off (animated branch)", async () => 
   );
   // Flush the async reduce-motion read + animation start inside act.
   await act(async () => {});
-  getByLabelText("VAIRA");
+  getByLabelText("INNAYA");
 });

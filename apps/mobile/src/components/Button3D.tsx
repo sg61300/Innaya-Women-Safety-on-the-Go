@@ -10,10 +10,12 @@ export type Button3DIcon = ComponentType<{ size?: number; color?: string; stroke
 // R-BTN 2026-09-04: primary faces use the DERIVED gradient tokens (d.btn.*),
 // which carry the WCAG guarantee. Never p.btnStart/Mid/End.
 export function Button3D({
-  label, onPress, variant = "primary", icon: Icon, disabled, loading, full, color, testID,
+  label, onPress, variant = "primary", icon: Icon, disabled, loading, full, color, edge, testID,
 }: {
   label: string; onPress: () => void; variant?: Variant; icon?: Button3DIcon;
   disabled?: boolean; loading?: boolean; full?: boolean; color?: string; testID?: string;
+  /** Rose-gold edge on a pill face (founder 2026-10-13, Home Call/Video). Off by default. */
+  edge?: boolean;
 }) {
   const { p, d } = useTheme();
   const [pressed, setPressed] = useState(false);
@@ -41,7 +43,7 @@ export function Button3D({
         style={[{
           minHeight: variant === "pill" ? 46 : 52, paddingHorizontal: 24, borderRadius: 26,
           backgroundColor: face, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-          borderWidth: variant === "ghost" ? 1.5 : 0, borderColor: p.rose,
+          borderWidth: variant === "ghost" || edge ? 1.5 : 0, borderColor: p.rose,
         }]}
       >
         {loading

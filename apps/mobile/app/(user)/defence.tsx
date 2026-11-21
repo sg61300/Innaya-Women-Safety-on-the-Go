@@ -6,6 +6,8 @@ import { Card } from "../../src/components/Card";
 import { Chip } from "../../src/components/Chip";
 import { Button3D } from "../../src/components/Button3D";
 import { Illustration, type IllustrationName } from "../../src/components/Illustration";
+import { MotionIllustration } from "../../src/components/MotionIllustration";
+import { useMotionActive } from "../../src/lib/useMotionActive";
 import { GradientBand, BAND_INK } from "../../src/components/GradientBand";
 import { defence, type DefenceClass } from "../../src/services/defence";
 import { links } from "../../src/lib/links";
@@ -72,6 +74,7 @@ export default function DefenceScreen() {
   }, []);
 
   const tools = defence.tools();
+  const motionActive = useMotionActive(); // tool motions run only while Defence is visible + reduce-motion off
 
   return (
     <View style={{ flex: 1, backgroundColor: p.bgBase }}>
@@ -105,7 +108,14 @@ export default function DefenceScreen() {
           : tools.map((t, i) => (
               <Card variant="raised" key={t.name} testID={`tool-row-${i}`}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                  <Illustration name={toolIcon(t.name)} size={48} />
+                  {(() => {
+                    const icon = toolIcon(t.name);
+                    // P16 safety phone breathes; P14 personal alarm gets a pulsing
+                    // ring of light; other tools stay static.
+                    if (icon === "tool-safety-phone") return <MotionIllustration name={icon} size={48} variant="breathe" active={motionActive} />;
+                    if (icon === "tool-personal-alarm") return <MotionIllustration name={icon} size={48} variant="pulse" active={motionActive} />;
+                    return <Illustration name={icon} size={48} />;
+                  })()}
                   <Text variant="bodyStrong" style={{ flex: 1 }}>{t.name}</Text>
                   <Chip kind={t.legal === "restricted" ? "critical" : "safe"} label={i18n.t(`defence.${t.legal}`)} />
                 </View>

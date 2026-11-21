@@ -29,7 +29,6 @@ function makeDeps(over: Partial<CancelFlowDeps> = {}): CancelFlowDeps {
     verifyPassword: jest.fn().mockResolvedValue(true),
     verifyWord: jest.fn().mockResolvedValue(true),
     createRequest: jest.fn().mockResolvedValue({ askedCount: 3 }),
-    subscribeVerdict: jest.fn(() => () => {}),
     uploadMedia: jest.fn().mockResolvedValue("me@example.com"),
     captureMedia: { takePhoto: jest.fn().mockResolvedValue("file:///p.jpg"), recordVideo: jest.fn().mockResolvedValue("file:///p.mp4") },
     ...over,
@@ -43,7 +42,7 @@ describe("CancelFlow simulation mode", () => {
     const onExit = jest.fn();
     // No journey → password step goes straight to the media proof step.
     const el = await mount(
-      <CancelFlow hasJourney={false} deps={makeDeps({ createRequest, uploadMedia })} onResolved={jest.fn()} onExit={onExit} simulation={{ email: "me@example.com" }} />,
+      <CancelFlow hasJourney={false} deps={makeDeps({ createRequest, uploadMedia })} onExit={onExit} simulation={{ email: "me@example.com" }} />,
     );
     await setText(el, "cancel-password-input", "pw");
     await press(el, "cancel-password-submit");
@@ -61,17 +60,17 @@ describe("CancelFlow simulation mode", () => {
     expect(onExit).toHaveBeenCalledTimes(1);
   });
 
-  it("real (non-simulation) flow is unchanged: proof → guardian request → waiting", async () => {
+  it("real (non-simulation) flow is unchanged: proof → guardian request", async () => {
     const createRequest = jest.fn().mockResolvedValue({ askedCount: 2 });
     const el = await mount(
-      <CancelFlow hasJourney={false} deps={makeDeps({ createRequest })} onResolved={jest.fn()} onExit={jest.fn()} />,
+      <CancelFlow hasJourney={false} deps={makeDeps({ createRequest })} onExit={jest.fn()} />,
     );
     await setText(el, "cancel-password-input", "pw");
     await press(el, "cancel-password-submit");
     el.getByTestId("cancel-step-media");
     expect(el.queryByTestId("cancel-sim-notice")).toBeNull();
     await press(el, "cancel-media-capture");
-    el.getByTestId("cancel-step-waiting");
+    expect(el.queryByTestId("cancel-step-media")).toBeNull();
     expect(createRequest).toHaveBeenCalledTimes(1);
   });
 });

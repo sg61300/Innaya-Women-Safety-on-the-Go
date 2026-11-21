@@ -228,28 +228,3 @@ describe("campaign source", () => {
     expect(mockSendConfirm).not.toHaveBeenCalled();
   });
 });
-
-// The confirmation email markup (real module, not the route mock above). Founder
-// s28 item 9: the engraved emblem must ship in the email header.
-describe("campaign confirmation email html", () => {
-  // requireActual bypasses the jest.mock("@/lib/waitlistEmail") used by the route tests.
-  const { campaignConfirmation } = jest.requireActual("@/lib/waitlistEmail") as typeof import("@/lib/waitlistEmail");
-  const { html } = campaignConfirmation();
-
-  it("carries the emblem logo with an absolute src and alt INNAYA", () => {
-    expect(html).toContain('src="https://innaya.example.com/campaign/emblem-rosegold-alpha-256.png"');
-    expect(html).toContain('alt="INNAYA"');
-    expect(html).toContain('width="96"');
-    expect(html).toContain('height="96"');
-  });
-
-  it("uses an ink header band and a table layout (Gmail/Outlook safe, no external CSS)", () => {
-    expect(html).toContain("#0C0A1E");
-    expect(html).toContain("<table");
-    expect(html).not.toContain("<link"); // no external stylesheet
-  });
-
-  it("has no em/en dash in the public copy (founder rule)", () => {
-    expect(html).not.toMatch(/&mdash;|&ndash;|&#8212;|&#8211;|[–—]/);
-  });
-});

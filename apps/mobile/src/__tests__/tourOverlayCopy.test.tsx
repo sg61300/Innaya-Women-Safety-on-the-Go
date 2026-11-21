@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react-native";
 import { ThemeProvider } from "../theme";
 import { TourOverlay } from "../components/tour/TourOverlay";
+import { TOUR_STEPS } from "../components/tour/steps";
 
 // Overlay reads safe-area insets; stub them (no SafeAreaProvider in the test).
 jest.mock("react-native-safe-area-context", () => ({
@@ -32,7 +33,7 @@ test("Next label comes from i18n (B1)", async () => {
 });
 
 test("Done label comes from i18n on the last step (B1)", async () => {
-  mockTour.index = 11;
+  mockTour.index = TOUR_STEPS.length - 1; // last step, whatever the step count
   const { getByText } = await render(<ThemeProvider initial="midnight"><TourOverlay /></ThemeProvider>);
   getByText("DONE_I18N");
 });

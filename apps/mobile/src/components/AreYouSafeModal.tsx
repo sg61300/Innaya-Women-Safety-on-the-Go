@@ -99,6 +99,7 @@ export function AreYouSafeModal() {
           onDanger={danger}
           speakerPromptFired={speakerPromptFired}
           error={error}
+          practice={runner.isPractice?.() ?? false}
         />
       ) : (
         <CustomBody

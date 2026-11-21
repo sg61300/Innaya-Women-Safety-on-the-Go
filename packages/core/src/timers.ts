@@ -21,8 +21,13 @@ export function capFor(etaSeconds: number): number { return Math.min(CAP_MULTIPL
 
 // ADR-043 cancel-flow / SOS-mode timers (the mobile runner fires these wall-clock).
 // SOS_MODE_CHOICE_MS: mode sheet auto-selects Siren after this. SOS_SIREN_DELAY_MS:
-// siren starts this long after the tap in siren mode. CANCEL_GUARDIAN_MS: the open
-// guardian cancel-request window (no answer → siren stays / stays silent).
+// siren starts this long after the tap in siren mode.
 // CANCEL_PASSWORD_LOCK_MS: lock before a 3rd app-password attempt is allowed.
-export const SOS_MODE_CHOICE_MS = 10_000, SOS_SIREN_DELAY_MS = 10_000, CANCEL_GUARDIAN_MS = 30_000, CANCEL_PASSWORD_LOCK_MS = 30_000;
+export const SOS_MODE_CHOICE_MS = 10_000, SOS_SIREN_DELAY_MS = 10_000, CANCEL_PASSWORD_LOCK_MS = 30_000;
 export function stationaryRadiusM(accuracyM: number): number { return Math.min(STATIONARY_RADIUS_MAX_M, Math.max(STATIONARY_RADIUS_MIN_M, 2 * accuracyM)); }
+
+// Fix AD round 2 (founder Q101, Q100, Q99): one group has 30 minutes to confirm she is
+// safe, with one resend (minute 15, one constant to change). A group's Safe stays valid
+// for the whole window and 5 minutes after it; after that the server refuses it.
+export const CANCEL_GROUP_WINDOW_MS = 30 * 60_000, CANCEL_RESEND_AT_MS = 15 * 60_000, CANCEL_LATE_SAFE_MS = 5 * 60_000;
+export function cancelSafeOpen(requestCreatedAtMs: number, now: number): boolean { return now <= requestCreatedAtMs + CANCEL_GROUP_WINDOW_MS + CANCEL_LATE_SAFE_MS; }

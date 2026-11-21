@@ -3,7 +3,6 @@ import { View } from "react-native";
 import { Screen } from "../../../src/components/Screen";
 import { Text } from "../../../src/components/Text";
 import { Card } from "../../../src/components/Card";
-import { ProfileBack } from "../../../src/components/ProfileChrome";
 import { useTheme } from "../../../src/theme";
 import { supabase } from "../../../src/lib/supabase";
 import i18n from "../../../src/i18n";
@@ -45,7 +44,7 @@ export default function DetailsScreen() {
   const dash = i18n.t("profile.notSet");
   return (
     <Screen scroll padded topInset={false} testID="profile-screen">
-      <ProfileBack title={i18n.t("profile.tabDetails")} />
+      <Text variant="title" accessibilityRole="header">{i18n.t("profile.tabDetails")}</Text>
       <Card testID="profile-details" style={{ gap: 0 }}>
         <DetailRow label={i18n.t("profile.name")} value={row?.name || dash} />
         <DetailRow label={i18n.t("profile.phone")} value={row?.phone || dash} />

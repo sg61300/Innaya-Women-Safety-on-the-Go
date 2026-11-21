@@ -5,19 +5,18 @@ import { Text } from "./Text";
 import { Button3D } from "./Button3D";
 import { TYPE } from "../theme/typography";
 import i18n from "../i18n";
-import { CANCEL_GUARDIAN_MS, CANCEL_PASSWORD_LOCK_MS, type CancelMethod } from "@vaira/core";
-type CancelVerdict = "cancel" | "keep" | "reraise" | "pending";
+import { CANCEL_PASSWORD_LOCK_MS, type CancelMethod } from "@vaira/core";
 import { CancelMediaCapture, type MediaCapture } from "./CancelMediaCapture";
 
 // ADR-043 item 4 — the "Not an emergency" cancel flow, shared by Siren and Silent
 // modes. It is a pure, dependency-injected state machine so every step and every
 // failure path is unit-testable without native modules or Supabase. The siren
-// (held during the flow, resumed on a step-1 failure or the 30 s guardian timeout
-// in Siren mode) is driven by the runner/alarmMode, NOT here — this component owns
+// (held during the flow, resumed on a step-1 failure in Siren mode) is driven by the runner/alarmMode, NOT here — this component owns
 // only the wearer's screens and the cancel request.
 //
 // Steps (§1 rules 5–9): 1 app password (2 tries, 30 s lock) → 2 journey word
-// ("Forgot it" → step 4) → 3 guardian request + wait → (4 photo/video proof).
+// ("Forgot it" → step 4) → 3 guardian request → (4 photo/video proof). Once the
+// request is open the flow is done: her screen goes normal (Fix AD round 2).
 // No active journey → step 2 is skipped and the wearer goes straight to step 4.
 
 // X5c (s25): the gate can fail for two very different reasons — a genuinely wrong
@@ -32,8 +31,6 @@ export type CancelFlowDeps = {
   verifyWord: (w: string) => Promise<boolean>;
   // Opens the guardian cancel request; resolves with how many guardians were asked.
   createRequest: (method: CancelMethod, mediaPath?: string) => Promise<{ askedCount: number }>;
-  // Realtime verdict from cancel_votes. Returns an unsubscribe fn.
-  subscribeVerdict: (cb: (v: CancelVerdict) => void) => () => void;
   // Uploads the proof to the private selfies bucket; resolves with the object path.
   // Throws on failure so the request is never created without its media.
   uploadMedia?: (localUri: string, method: "photo" | "video") => Promise<string>;
@@ -41,19 +38,17 @@ export type CancelFlowDeps = {
   captureMedia?: MediaCapture;
 };
 
-type Step = "password" | "word" | "media" | "waiting" | "cancelled" | "reraised" | "sent";
+type Step = "password" | "word" | "media" | "requested" | "sent";
 
 export function CancelFlow({
   hasJourney,
   deps,
-  onResolved,
   onSirenResume,
   onExit,
   simulation,
 }: {
   hasJourney: boolean;
   deps: CancelFlowDeps;
-  onResolved: (verdict: "cancel" | "reraise") => void;
   // ADR-043 rule 5: the 2nd wrong app password in Siren mode restarts the siren
   // (the runner owns it). Undefined in Silent mode — nothing to resume.
   onSirenResume?: () => void;
@@ -74,9 +69,7 @@ export function CancelFlow({
   const [busy, setBusy] = useState(false);
   const [pwFails, setPwFails] = useState(0);
   const [lockLeft, setLockLeft] = useState(0); // seconds remaining on the 30 s lock
-  const [asked, setAsked] = useState(0);
   const [sentTo, setSentTo] = useState(""); // X5a: the address the sim proof went to
-  const [waitLeft, setWaitLeft] = useState(Math.round(CANCEL_GUARDIAN_MS / 1000));
 
   // 30 s password lock countdown (rule 5: a third attempt only after 30 s).
   useEffect(() => {
@@ -84,33 +77,6 @@ export function CancelFlow({
     const id = setInterval(() => setLockLeft((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(id);
   }, [lockLeft]);
-
-  // Step 3: subscribe to the guardian verdict and run the 30 s visible bar. The
-  // request stays open past 30 s (rule 7) — the bar just bottoms out; the siren
-  // behaviour at the timeout is the runner's job, not this screen's.
-  useEffect(() => {
-    if (step !== "waiting") return;
-    setWaitLeft(Math.round(CANCEL_GUARDIAN_MS / 1000));
-    const startedAt = Date.now();
-    const bar = setInterval(() => {
-      setWaitLeft(Math.max(0, Math.ceil((CANCEL_GUARDIAN_MS - (Date.now() - startedAt)) / 1000)));
-    }, 500);
-    const off = deps.subscribeVerdict((v) => {
-      if (v === "cancel") {
-        setStep("cancelled");
-        onResolved("cancel");
-      } else if (v === "reraise" || v === "keep") {
-        setStep("reraised");
-        onResolved("reraise");
-      }
-      // "pending" → keep waiting.
-    });
-    return () => {
-      clearInterval(bar);
-      off();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
 
   const reset = () => {
     setValue("");
@@ -162,13 +128,12 @@ export function CancelFlow({
         return;
       }
       reset();
-      const { askedCount } = await deps.createRequest("word");
-      setAsked(askedCount);
-      setStep("waiting");
+      await deps.createRequest("word");
+      setStep("requested");
     } catch (e) {
-      // 409 = the alarm left a cancellable state before the request landed; any
-      // other failure (offline) keeps the wearer on this step to retry.
-      setError(i18n.t((e as Error)?.name === "NotCancellableError" ? "cancelFlow.notActive" : "cancelFlow.wordWrong"));
+      // 409 = the alarm left a cancellable state before the request landed; any other
+      // failure keeps her on this step to retry. The word was right, so never say wrong.
+      setError(i18n.t((e as Error)?.name === "NotCancellableError" ? "cancelFlow.notActive" : "cancelFlow.sendFailed"));
     } finally {
       setBusy(false);
     }
@@ -192,9 +157,8 @@ export function CancelFlow({
       // Upload FIRST; only create the request once the media exists, so a failed
       // upload never leaves a medialess request behind (stress requirement).
       const mediaPath = deps.uploadMedia ? await deps.uploadMedia(localUri, method) : undefined;
-      const { askedCount } = await deps.createRequest(method, mediaPath);
-      setAsked(askedCount);
-      setStep("waiting");
+      await deps.createRequest(method, mediaPath);
+      setStep("requested");
     } catch (e) {
       setError(i18n.t((e as Error)?.name === "NotCancellableError" ? "cancelFlow.notActive" : "cancelFlow.uploadFailed"));
     } finally {
@@ -218,7 +182,7 @@ export function CancelFlow({
   // X5b: a visible "Back to alarm" control returning to the alarm state. Absolutely
   // positioned top-left so it never disturbs the centered step layout.
   const exitControl =
-    onExit && step !== "cancelled" && step !== "reraised" && step !== "sent" ? (
+    onExit && step !== "requested" && step !== "sent" ? (
       <Pressable
         testID="cancel-exit"
         accessibilityRole="button"
@@ -330,22 +294,6 @@ export function CancelFlow({
     );
   }
 
-  if (step === "cancelled") {
-    return frame(<Text variant="display" testID="cancel-cancelled">{i18n.t("cancelFlow.cancelled")}</Text>, "cancel-step-cancelled");
-  }
-
-  if (step === "reraised") {
-    return frame(<Text variant="display" testID="cancel-reraised">{i18n.t("cancelFlow.reraised")}</Text>, "cancel-step-reraised");
-  }
-
-  // waiting
-  return frame(
-    <>
-      <Text variant="display">{i18n.t("cancelFlow.waitTitle")}</Text>
-      <Text variant="bodyStrong" testID="cancel-wait-asked">{i18n.t("cancelFlow.waitSub", { n: asked })}</Text>
-      <Text variant="body" color={p.textMuted}>{i18n.t("cancelFlow.waiting")}</Text>
-      <Text variant="caption" color={p.textMuted} testID="cancel-wait-bar">{waitLeft}</Text>
-    </>,
-    "cancel-step-waiting",
-  );
+  // "requested": the overlay closes as the runner marks the wait; nothing to show.
+  return null;
 }

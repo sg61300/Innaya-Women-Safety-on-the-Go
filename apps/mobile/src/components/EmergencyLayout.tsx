@@ -38,12 +38,16 @@ export function EmergencyLayout({
   items,
   onCancelPress,
   children,
+  practice = false,
 }: {
   state: EmergencyState;
   elapsedS: number;
   items: ActionLogItem[];
   onCancelPress: () => void;
   children?: ReactNode;
+  // Drill only: show a "Practice · not a real alert" badge. Defaults false so the
+  // real alarm screen renders exactly as before (byte-identical).
+  practice?: boolean;
 }) {
   const { d } = useTheme();
   const critical = state === "CRITICAL" || state === "CANCEL_HOLD";
@@ -107,6 +111,14 @@ export function EmergencyLayout({
         contentInsetAdjustmentBehavior="never"
       >
         <View style={{ alignItems: "center", gap: 12 }}>
+          {practice ? (
+            <View
+              testID="emergency-practice-badge"
+              style={{ paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.85)", backgroundColor: "rgba(0,0,0,0.20)" }}
+            >
+              <Text variant="caption" color="onPrimary" style={{ textAlign: "center" }}>{i18n.t("practice.notRealAlert")}</Text>
+            </View>
+          ) : null}
           <ShieldAlert size={44} color={d.onPrimary} strokeWidth={2.2} />
           {/* H4: on a 320 dp phone the display heading grew to 3 lines and the
               last line clipped ("…ng ca"), pushing the checklist + cancel off

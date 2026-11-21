@@ -12,6 +12,6 @@
     { "name": "Personal alarm", "legal": "legal", "amazonUrl": "https://www.amazon.in/s?k=personal+safety+alarm" },
     { "name": "Baton", "legal": "legal", "amazonUrl": "https://www.amazon.in/s?k=self+defence+baton" },
     { "name": "Whistle", "legal": "legal", "amazonUrl": "https://www.amazon.in/s?k=safety+whistle" },
-    { "name": "Taser", "legal": "restricted", "amazonUrl": "https://www.amazon.in/s?k=stun+gun", "note": "restricted in India — VERIFY local law" }
+    { "name": "Taser", "legal": "restricted", "amazonUrl": "https://www.amazon.in/s?k=stun+gun", "note": "restricted in India. VERIFY local law" }
   ]
 }

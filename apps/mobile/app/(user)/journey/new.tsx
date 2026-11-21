@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { View, Pressable, Platform, BackHandler, Alert, ActivityIndicator, Linking } from "react-native";
-import { useRouter } from "expo-router";
+import { View, Pressable, Platform, Alert, ActivityIndicator, Linking } from "react-native";
+import { useRouter, useNavigation } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { AudioModule } from "expo-audio";
 import * as Location from "expo-location";
 import * as Battery from "expo-battery";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { GooglePlacesAutocomplete, type GooglePlacesAutocompleteRef } from "react-native-google-places-autocomplete";
-import { Crosshair, Camera as CameraIcon, RefreshCw, Clock, ChevronLeft } from "lucide-react-native";
+import { Crosshair, Camera as CameraIcon, RefreshCw, Clock } from "lucide-react-native";
 import { normalisePlate } from "@vaira/core";
 import { useTheme } from "../../../src/theme";
 import { Screen } from "../../../src/components/Screen";
@@ -17,7 +17,7 @@ import { Chip } from "../../../src/components/Chip";
 import { Button3D } from "../../../src/components/Button3D";
 import { CityPicker } from "../../../src/components/CityPicker";
 import { SafeWordStrength } from "../../../src/components/SafeWordStrength";
-import { createJourney, etaSeconds, isBlacklisted, isValidCoordinate, validateSafeWord, type Pt } from "../../../src/services/journey";
+import { createJourney, etaSeconds, hasGuardianWithEmail, isBlacklisted, isValidCoordinate, validateSafeWord, type Pt } from "../../../src/services/journey";
 import { secureWords } from "../../../src/services/secureWords";
 import { runner } from "../../../src/services/protocolRunner";
 import { ensureJourneyPermissions, type JourneyPermStep } from "../../../src/lib/permissions";
@@ -27,6 +27,7 @@ import { supabase } from "../../../src/lib/supabase";
 import { useSession } from "../../../src/store/session";
 import { CITY_OPTIONS, type CityKey } from "../../../src/lib/cities";
 import i18n from "../../../src/i18n";
+import { TourTarget } from "../../../src/components/tour/TourProvider";
 
 type Place = (Pt & { label: string }) | null;
 
@@ -50,6 +51,7 @@ function capText(etaSec: number): string {
 export default function JourneyNewScreen() {
   const { p } = useTheme();
   const router = useRouter();
+  const navigation = useNavigation();
   const userId = useSession((s) => s.userId);
   const [salt, setSalt] = useState("");
   // Places autocomplete now proxies through the api (R40): the server injects the
@@ -125,24 +127,26 @@ export default function JourneyNewScreen() {
   const formDirty = Boolean(from || to || plate || safeWord || selfieUri);
   const dirtyRef = useRef(formDirty);
   dirtyRef.current = formDirty;
+  // Founder 2026-10-15 (1-A): the ONLY back control is the top-bar arrow. Set on
+  // a successful submit so the hand-off navigation is not caught by the guard.
+  const savedRef = useRef(false);
 
-  function goBack() {
-    if (!dirtyRef.current) { router.back(); return; }
-    Alert.alert(i18n.t("journeyNew.discardTitle"), i18n.t("journeyNew.discardBody"), [
-      { text: i18n.t("journeyNew.keepEditing"), style: "cancel" },
-      { text: i18n.t("journeyNew.discard"), style: "destructive", onPress: () => router.back() },
-    ]);
-  }
-
+  // G7 + 1-A: intercept the screen being removed — top-bar back, hardware back
+  // AND the iOS swipe all raise `beforeRemove`. When the form has unsaved
+  // entries, block once and confirm with the SAME Discard dialog (there is no
+  // BackHandler path any more, so the dialog can never show twice). A clean or
+  // already-saved form leaves without a prompt.
   useEffect(() => {
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (!dirtyRef.current) return false; // let the OS handle a clean form
-      goBack();
-      return true; // consume: confirm before discarding
+    const sub = navigation.addListener("beforeRemove", (e) => {
+      if (!dirtyRef.current || savedRef.current) return;
+      e.preventDefault();
+      Alert.alert(i18n.t("journeyNew.discardTitle"), i18n.t("journeyNew.discardBody"), [
+        { text: i18n.t("journeyNew.keepEditing"), style: "cancel" },
+        { text: i18n.t("journeyNew.discard"), style: "destructive", onPress: () => navigation.dispatch(e.data.action) },
+      ]);
     });
-    return () => sub.remove();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return sub;
+  }, [navigation]);
 
   const cityCentre = useMemo<Pt>(() => {
     const c = CITY_OPTIONS.find((o) => o.value === city)!;
@@ -221,6 +225,7 @@ export default function JourneyNewScreen() {
 
   // A journey must carry the actual user-selected/resolved origin. Never turn
   // a missing GPS/place value into the city's centre in the persisted payload.
+  const [needGuardian, setNeedGuardian] = useState(false);
   const canSubmit = Boolean(from && selfieUri && to && safeWord && swVerdict?.ok && (!blacklisted || overrideBlacklist) && !submitting);
 
   async function submit(skipCharge = false) {
@@ -250,6 +255,13 @@ export default function JourneyNewScreen() {
     setSubmitting(true);
     setError(null);
     try {
+      // Founder Q123, Q124: checked afresh on every press, so an email added since counts.
+      const hasGuardian = await hasGuardianWithEmail(userId);
+      setNeedGuardian(!hasGuardian);
+      if (!hasGuardian) {
+        setSubmitting(false);
+        return;
+      }
       // T1: gate on the blacklist BEFORE writing anything. A blacklisted vehicle
       // must never start a monitored journey; surface the banner and stop.
       if (plate && !overrideBlacklist && (await isBlacklisted(plate))) {
@@ -283,6 +295,7 @@ export default function JourneyNewScreen() {
       // Arm the (stub) runner with the full row, then hand off to the dashboard.
       const { data: row } = await supabase.from("journeys_v").select("*").eq("id", res.id).single();
       runner.send({ type: "ARM", journey: row ?? { id: res.id } });
+      savedRef.current = true; // allow the hand-off nav past the beforeRemove guard
       router.replace("/(user)/home");
     } catch (e) {
       const msg = String((e as Error)?.message ?? "");
@@ -294,26 +307,23 @@ export default function JourneyNewScreen() {
 
   return (
     <Screen scroll padded topInset={false} testID="journey-new">
-      <Pressable
-        testID="journey-back"
-        accessibilityRole="button"
-        accessibilityLabel={i18n.t("common.back")}
-        onPress={goBack}
-        style={{ flexDirection: "row", alignItems: "center", minHeight: 48, alignSelf: "flex-start" }}
-      >
-        <ChevronLeft color={p.text} size={24} />
-        <Text variant="body" color="muted">{i18n.t("common.back")}</Text>
-      </Pressable>
-      <Text variant="title" color="primary" style={{ marginTop: 12, marginBottom: 4 }}>
+      {/* Phase 3b: the form's own back link was removed; the top-bar arrow is the
+          only back control. Unsaved entries are guarded by the beforeRemove
+          interceptor above. */}
+      <Text variant="title" color="primary" accessibilityRole="header" style={{ marginTop: 12, marginBottom: 4 }}>
         {i18n.t("journeyNew.title")}
       </Text>
 
+      {/* Intro tour targets (founder 2026-11-17 "Add the targets"): cityGps, route, safeWord. */}
+      <TourTarget id="cityGps">
       <Text variant="label" color="muted" style={{ marginTop: 12, marginBottom: 6 }}>
         {i18n.t("journeyNew.cityLabel")}
       </Text>
       <CityPicker value={city} onChange={setCity} />
+      </TourTarget>
 
       {/* Route */}
+      <TourTarget id="route">
       <Text variant="label" color="muted" style={{ marginTop: 16, marginBottom: 6 }}>
         {i18n.t("journeyNew.from")}
       </Text>
@@ -379,6 +389,7 @@ export default function JourneyNewScreen() {
         }}
       />
       {to ? <Text variant="caption" color="muted">{to.label}</Text> : null}
+      </TourTarget>
 
       {dangerZone ? (
         <View testID="journey-dangerzone" style={{ marginTop: 10 }}>
@@ -523,7 +534,7 @@ export default function JourneyNewScreen() {
       ) : null}
 
       {/* Safe word */}
-      <View style={{ marginTop: 4 }}>
+      <TourTarget id="safeWord" style={{ marginTop: 4 }}>
         {/* G8: the safe word gates arming, so mark it required (label asterisk + helper). */}
         <Field
           label={`${i18n.t("journeyNew.safeWord")} *`}
@@ -543,7 +554,7 @@ export default function JourneyNewScreen() {
             {i18n.t("journeyNew.safeWordUsed")}
           </Text>
         ) : null}
-      </View>
+      </TourTarget>
 
       {/* Selfie */}
       <Text variant="label" color="muted" style={{ marginTop: 16, marginBottom: 6 }}>
@@ -608,6 +619,13 @@ export default function JourneyNewScreen() {
             {i18n.t("journeyNew.permBlockedBody", { perms: permBlocked.map((s) => i18n.t(`journeyNew.perm.${s}`)).join(", ") })}
           </Text>
           <Button3D label={i18n.t("journeyNew.openSettings")} testID="journey-open-settings" full onPress={() => { void Linking.openSettings(); }} />
+        </View>
+      ) : null}
+
+      {needGuardian ? (
+        <View testID="journey-need-guardian" style={{ marginTop: 16, gap: 10, padding: 14, borderRadius: 16, borderWidth: 1, borderColor: p.stateDanger }}>
+          <Text variant="body">{i18n.t("journeyNew.needGuardianEmail")}</Text>
+          <Button3D label={i18n.t("journeyNew.addGuardianEmail")} testID="journey-add-guardian" full onPress={() => router.push("/(user)/profile/guardians")} />
         </View>
       ) : null}
 

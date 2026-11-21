@@ -33,13 +33,6 @@ it("createRequest throws — a drill can never open a guardian cancel request", 
   expect(mockPost).not.toHaveBeenCalled();
 });
 
-it("subscribeVerdict is an inert no-op (no guardian verdict subscription)", () => {
-  const deps = makeSimulationCancelFlowDeps();
-  const off = deps.subscribeVerdict(() => { throw new Error("must not fire"); });
-  expect(typeof off).toBe("function");
-  off();
-});
-
 it("verifyPassword is local-only: true when no local hash, false when the local hash rejects", async () => {
   const deps = makeSimulationCancelFlowDeps();
   expect(await deps.verifyPassword("pw")).toBe(true); // null → proceed

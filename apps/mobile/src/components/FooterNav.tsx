@@ -4,32 +4,36 @@ import { View, Pressable } from "react-native";
 // @react-navigation/bottom-tabs (whose same-named types are nominally distinct).
 // Import the matching type from expo-router so the layouts type-check with no cast.
 import type { BottomTabBarProps } from "expo-router/build/react-navigation/bottom-tabs/types";
-import { House, MapPinned, PlayCircle, User, Users, Video, HeartPulse } from "lucide-react-native";
-import type { LucideIcon } from "lucide-react-native";
 import { useTheme } from "../theme";
 import { Text } from "./Text";
+import { Illustration, type IllustrationName } from "./Illustration";
+import { Heartbeat } from "./Heartbeat";
 import { HoldSosButton } from "./HoldSosButton";
 import { TourTarget } from "./tour/TourProvider";
 import i18n from "../i18n";
 
 type Role = "user" | "guardian";
-type Slot = { key: string; route: string; icon?: LucideIcon; hintKey?: string };
+type Slot = { key: string; route: string; img?: IllustrationName; hintKey?: string };
 
-// Centre slot (route "sos") is the hold button; the rest are real tabs.
+// Footer tabs now use the rose-gold charm illustrations (founder 2026-10-11):
+// charm image at 28, unselected tabs are the same image faded (~0.45), the
+// selected tab sits on a plum pill (#2A2238 = p.bgCard2) with a rose-gold edge
+// (#C6997A = p.rose). Centre slot (route "sos") is the hold button, unchanged.
+const CHARM_SIZE = 28;
 const SLOTS: Record<Role, Slot[]> = {
   user: [
-    { key: "home", route: "home", icon: House },
-    { key: "regions", route: "regions", icon: MapPinned },
+    { key: "home", route: "home", img: "tab-home" },
+    { key: "regions", route: "regions", img: "tab-regions" },
     { key: "sos", route: "sos" },
-    { key: "simulate", route: "simulate", icon: PlayCircle },
-    { key: "profile", route: "profile", icon: User },
+    { key: "simulate", route: "simulate", img: "tab-simulate" },
+    { key: "profile", route: "profile", img: "tab-profile" },
   ],
   guardian: [
-    { key: "trustees", route: "trustees", icon: Users },
-    { key: "live", route: "live", icon: Video, hintKey: "footer.liveHint" },
+    { key: "trustees", route: "trustees", img: "tab-trustees" },
+    { key: "live", route: "live", img: "tab-live", hintKey: "footer.liveHint" },
     { key: "sos", route: "sos" },
-    { key: "vitals", route: "vitals", icon: HeartPulse, hintKey: "footer.vitalsHint" },
-    { key: "profile", route: "profile", icon: User },
+    { key: "vitals", route: "vitals", img: "tab-vitals", hintKey: "footer.vitalsHint" },
+    { key: "profile", route: "profile", img: "tab-profile" },
   ],
 };
 
@@ -49,7 +53,7 @@ function alphaHex(hex: string, a: number): string {
 type FooterNavProps = Pick<BottomTabBarProps, "state" | "navigation" | "insets"> & { role: Role; onSos: () => void };
 
 export function FooterNav({ state, navigation, insets, role, onSos }: FooterNavProps) {
-  const { p, d } = useTheme();
+  const { p } = useTheme();
   const slots = SLOTS[role];
   const bottom = insets?.bottom ?? 0;
   return (
@@ -66,8 +70,12 @@ export function FooterNav({ state, navigation, insets, role, onSos }: FooterNavP
         const present = routeIndex >= 0;
         const active = present && state.index === routeIndex;
         const label = i18n.t(`footer.${slot.key}`);
-        // Only the sos slot omits icon, and it returned above; the rest always set it.
-        const Icon = slot.icon!;
+        // Only the sos slot omits img, and it returned above; the rest always set it.
+        const img = slot.img!;
+        // Founder 2026-10-12: the Guardian app's Vitals tab charm beats like a heart.
+        const charm = slot.key === "vitals"
+          ? <Heartbeat><Illustration name={img} size={CHARM_SIZE} /></Heartbeat>
+          : <Illustration name={img} size={CHARM_SIZE} />;
         const onPress = () => {
           if (!present) return;
           const event = navigation.emit({ type: "tabPress", target: state.routes[routeIndex].key, canPreventDefault: true });
@@ -78,7 +86,6 @@ export function FooterNav({ state, navigation, insets, role, onSos }: FooterNavP
           if (slot.key === "profile") navigation.navigate(slot.route, { screen: "index" });
           else if (!active) navigation.navigate(slot.route);
         };
-        const iconColor = active ? d.onPrimary : p.textMuted;
         return (
           <Pressable key={slot.key} testID={`tab-${slot.key}`} disabled={!present}
             accessibilityRole="button" accessibilityLabel={label}
@@ -86,19 +93,15 @@ export function FooterNav({ state, navigation, insets, role, onSos }: FooterNavP
             accessibilityHint={present ? undefined : (slot.hintKey ? i18n.t(slot.hintKey) : undefined)}
             onPress={onPress}
             style={{ flex: 1, minHeight: 48, alignItems: "center", justifyContent: "flex-end", opacity: present ? 1 : 0.4, gap: 4 }}>
-            {/* F6: the active tab reads as a 3-D pill — a deep edge sits directly
-                behind the face and shows as an attached 3px bottom lip (same
-                radius, no gap), matching Button3D. Inactive tabs stay flat. */}
+            {/* Selected: the charm sits on a plum pill (p.bgCard2) with a rose-gold
+                edge (p.rose). Unselected: the same charm faded to ~0.45. */}
             {active ? (
-              <View style={{ borderRadius: 16 }}>
-                <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 16, backgroundColor: d.btn.deep }} />
-                <View style={{ backgroundColor: d.btn.mid, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, alignItems: "center", marginBottom: 3 }}>
-                  <Icon size={22} color={iconColor} strokeWidth={2} />
-                </View>
+              <View style={{ backgroundColor: p.bgCard2, borderWidth: 1, borderColor: p.rose, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, alignItems: "center" }}>
+                {charm}
               </View>
             ) : (
-              <View style={{ paddingHorizontal: 16, paddingVertical: 6, alignItems: "center" }}>
-                <Icon size={22} color={iconColor} strokeWidth={2} />
+              <View style={{ paddingHorizontal: 14, paddingVertical: 6, alignItems: "center", opacity: 0.45 }}>
+                {charm}
               </View>
             )}
             <Text variant="label" color={active ? "primary" : "muted"}>{label}</Text>

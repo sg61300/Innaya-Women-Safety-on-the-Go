@@ -83,7 +83,7 @@ export default function Gallery() {
   return (
     <Screen scroll padded topInset={false}>
       <View style={{ marginTop: 16 }}>
-        <Text variant="display">VAIRA kit</Text>
+        <Text variant="display">INNAYA kit</Text>
         <Text variant="subtitle" color="muted">Palette: {label}</Text>
       </View>
 

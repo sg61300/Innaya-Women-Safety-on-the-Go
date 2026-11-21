@@ -7,6 +7,7 @@ import { Screen } from "../../../src/components/Screen";
 import { Button3D } from "../../../src/components/Button3D";
 import { ProfileCard } from "../../../src/components/ProfileChrome";
 import { supabase } from "../../../src/lib/supabase";
+import { frameQueue } from "../../../src/services/frameQueue";
 import i18n from "../../../src/i18n";
 import { Text } from "../../../src/components/Text";
 import { Card } from "../../../src/components/Card";
@@ -49,6 +50,7 @@ export default function ProfileIndex() {
 
   async function logout() {
     try { await supabase.auth.signOut(); } catch (e) { console.warn("[profile] sign out failed", (e as Error).message); }
+    await frameQueue.signOut();
     for (const k of ["vaira.app_password_hash", "vaira.device_salt", "vaira.account_email"]) {
       try { await SecureStore.deleteItemAsync(k); } catch { /* best-effort wipe */ }
     }
@@ -76,7 +78,7 @@ export default function ProfileIndex() {
         />
         <ProfileCard testID="profile-card-language" icon={Languages} title={t("profile.language")} description={t("profile.descLanguage")} onPress={() => router.push("/(user)/profile/language" as never)} />
         <ProfileCard testID="profile-card-appearance" icon={Palette} title={t("profile.appearance")} description={t("profile.descAppearance")} onPress={() => router.push("/(user)/profile/appearance" as never)} />
-        <ProfileCard testID="profile-card-vitals" icon={Activity} title={t("profile.tabVitals")} description={t("profile.descVitals")} onPress={() => router.push("/(user)/profile/vitals" as never)} />
+        <ProfileCard testID="profile-card-vitals" icon={Activity} pulse title={t("profile.tabVitals")} description={t("profile.descVitals")} onPress={() => router.push("/(user)/profile/vitals" as never)} />
         <ProfileCard testID="profile-card-history" icon={Clock} title={t("profile.tabHistory")} description={t("profile.descHistory")} onPress={() => router.push("/(user)/profile/history" as never)} />
         <ProfileCard testID="profile-card-privacy" icon={Lock} title={t("profile.tabPrivacy")} description={t("profile.descPrivacy")} onPress={() => router.push("/(user)/profile/privacy" as never)} />
       </View>

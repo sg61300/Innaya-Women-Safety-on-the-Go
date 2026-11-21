@@ -42,7 +42,6 @@ export type ProtocolEvent =
   | { type: "CANCEL_STEP2_OK" }                                // ADR-043 step 2: journey safe word verified (wearer-local; no state change)
   | { type: "CANCEL_REQUESTED"; method: CancelMethod }         // ADR-043 step 3/4: guardian cancel request opened
   | { type: "GUARDIAN_VOTE"; safe: boolean; contactId: string } // ADR-043: one guardian's verdict on the open cancel request
-  | { type: "CANCEL_TIMEOUT" }                                 // ADR-043: 30 s with no guardian answer
   | { type: "GUARDIAN_SAYS_WRONG" }                            // ADR-043 / heightened mode: guardians keep the alarm on / raise it
   | { type: "END" };
 
@@ -56,5 +55,5 @@ export type Action =
   | "NOTIFY_GUARDIANS_STOPPED" | "NOTIFY_GUARDIANS_CAP" | "NOTIFY_GUARDIANS_ROUTE"
   | "START_CHALLENGE_PAUSE" | "START_CHALLENGE_STATIONARY" | "START_CHALLENGE_ROUTE" | "START_CHALLENGE_AWAY";
 
-export interface ProtocolContext { state: ProtocolState; ending: boolean; heightened: boolean; cameraPaused: boolean; challenge: ChallengeKind | null; alarmMode: AlarmMode; }
+export interface ProtocolContext { state: ProtocolState; ending: boolean; heightened: boolean; cameraPaused: boolean; challenge: ChallengeKind | null; alarmMode: AlarmMode; cancelWaiting?: boolean; quietAlarm?: boolean; }
 export interface TransitionResult { ctx: ProtocolContext; actions: Action[]; reason: string; }

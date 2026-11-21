@@ -167,9 +167,9 @@ export default function GuardianProfileScreen() {
 
         <Card style={{ gap: 8 }}>
           <Text variant="label" color="muted">{i18n.t("guardian.profile.name")}</Text>
-          <Text variant="bodyStrong" color="primary" testID="guardian-profile-name">{name || "—"}</Text>
+          <Text variant="bodyStrong" color="primary" testID="guardian-profile-name">{name || i18n.t("guardian.profile.notAdded")}</Text>
           <Text variant="label" color="muted" style={{ marginTop: 8 }}>{i18n.t("guardian.profile.phone")}</Text>
-          <Text variant="bodyStrong" color="primary" testID="guardian-profile-phone">{phone || "—"}</Text>
+          <Text variant="bodyStrong" color="primary" testID="guardian-profile-phone">{phone || i18n.t("guardian.profile.notAdded")}</Text>
         </Card>
 
         <Card style={{ gap: 8 }}>

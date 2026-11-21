@@ -7,7 +7,7 @@ import { useSession } from "../store/session";
 // Continue starts the journey. Isolated in its own file so the submit()'s trailing
 // async never overlaps another test's render (see journeyNewScreen.test.tsx).
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn() }), useNavigation: () => ({ addListener: () => () => {}, dispatch: jest.fn() }) }));
 
 jest.mock("expo-camera", () => {
   const React2 = require("react");
@@ -68,7 +68,9 @@ jest.mock("../lib/supabase", () => ({
   supabase: {
     auth: { getSession: jest.fn().mockResolvedValue({ data: { session: { access_token: "tok" } } }) },
     from: (t: string) =>
-      t === "blacklisted_vehicles"
+      t === "contacts"
+        ? { select: () => ({ eq: () => Promise.resolve({ data: [{ email: "a-guardian-email" }], error: null }) }) }
+        : t === "blacklisted_vehicles"
         ? { select: () => ({ eq: () => ({ maybeSingle: jest.fn().mockResolvedValue({ data: null }) }) }) }
         : { select: () => ({ eq: () => ({ single: mockSingle }) }) },
     rpc: jest.fn().mockResolvedValue({ data: [] }),
@@ -76,6 +78,8 @@ jest.mock("../lib/supabase", () => ({
 }));
 
 import JourneyNewScreen from "../../app/(user)/journey/new";
+// journey/new now carries intro-tour targets (TourTarget needs the provider).
+import { TourProvider } from "../components/tour/TourProvider";
 
 const press = async (r: Awaited<ReturnType<typeof render>>, id: string) => {
   await act(async () => { fireEvent.press(r.getByTestId(id)); await new Promise((res) => setTimeout(res, 0)); });
@@ -84,7 +88,7 @@ const press = async (r: Awaited<ReturnType<typeof render>>, id: string) => {
 test("R47d: ≤20 % battery shows a non-blocking charge sheet; Continue then starts", async () => {
   useSession.setState({ userId: "u1" });
   let r!: Awaited<ReturnType<typeof render>>;
-  await act(async () => { r = await render(<ThemeProvider><JourneyNewScreen /></ThemeProvider>); });
+  await act(async () => { r = await render(<ThemeProvider><TourProvider><JourneyNewScreen /></TourProvider></ThemeProvider>); });
 
   fireEvent.changeText(r.getByTestId("journey-from"), "Home");
   fireEvent.changeText(r.getByTestId("journey-to"), "Office");

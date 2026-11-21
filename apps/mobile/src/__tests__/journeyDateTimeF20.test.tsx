@@ -13,7 +13,7 @@ jest.mock("@react-native-community/datetimepicker", () => {
   return { __esModule: true, default: (p: Record<string, any>) => { mockPickerProps = p; return React2.createElement(View, { testID: p.testID }); } };
 });
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn(), navigate: jest.fn(), back: jest.fn() }), useNavigation: () => ({ addListener: () => () => {}, dispatch: jest.fn() }) }));
 jest.mock("expo-camera", () => {
   const React2 = require("react");
   const { View } = require("react-native");
@@ -37,11 +37,13 @@ jest.mock("../lib/supabase", () => ({
 }));
 
 import JourneyNewScreen from "../../app/(user)/journey/new";
+// journey/new now carries intro-tour targets (TourTarget needs the provider).
+import { TourProvider } from "../components/tour/TourProvider";
 
 const renderScreen = async () => {
   useSession.setState({ userId: "u1" });
   let out: ReturnType<typeof render>;
-  await act(async () => { out = render(<ThemeProvider><JourneyNewScreen /></ThemeProvider>); });
+  await act(async () => { out = render(<ThemeProvider><TourProvider><JourneyNewScreen /></TourProvider></ThemeProvider>); });
   return out!;
 };
 

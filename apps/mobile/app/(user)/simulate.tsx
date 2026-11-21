@@ -11,6 +11,8 @@ import { Card } from "../../src/components/Card";
 import { Chip } from "../../src/components/Chip";
 import { Button3D } from "../../src/components/Button3D";
 import { Illustration } from "../../src/components/Illustration";
+import { GoLiveTurn, VideoCheckLink } from "../../src/components/SimulateMotions";
+import { useMotionActive } from "../../src/lib/useMotionActive";
 import { TourTarget, useTourScroller } from "../../src/components/tour/TourProvider";
 import { FakeLiveStream } from "../../src/components/FakeLiveStream";
 import { simulation, drillScript } from "../../src/services/simulation";
@@ -31,6 +33,7 @@ export default function SimulateScreen() {
   const [primaryPhone, setPrimaryPhone] = useState<string | null>(null);
   const userId = useSession((s) => s.userId);
   const scrollRef = useRef<ScrollView>(null);
+  const motionActive = useMotionActive(); // card motions run only while Simulate is visible + reduce-motion off
   useScrollTopOnFocus(scrollRef); // F17: reset to top when the Simulate tab regains focus
   useTourScroller("/(user)/simulate", scrollRef); // F6: scroll tour targets into view
 
@@ -127,7 +130,7 @@ export default function SimulateScreen() {
 
           {/* Card 2 — fake live stream */}
           <Card variant="raised" testID="sim-card-live">
-            <Illustration name="simulate-golive" size={56} style={{ marginBottom: 8 }} />
+            <View style={{ marginBottom: 8 }}><GoLiveTurn active={motionActive} /></View>
             <Text variant="bodyStrong">{i18n.t("simulate.live.title")}</Text>
             <Text variant="caption" color="muted" style={{ marginTop: 4 }}>{i18n.t("simulate.live.body")}</Text>
             <View style={{ marginTop: 12 }}>
@@ -137,7 +140,7 @@ export default function SimulateScreen() {
 
           {/* Card 3 — WhatsApp video call to a guardian */}
           <Card variant="raised" testID="sim-card-call">
-            <Illustration name="simulate-videocall" size={56} style={{ marginBottom: 8 }} />
+            <View style={{ marginBottom: 8 }}><VideoCheckLink active={motionActive} /></View>
             <Text variant="bodyStrong">{i18n.t("simulate.call.title")}</Text>
             <Text variant="caption" color="muted" style={{ marginTop: 4 }}>{i18n.t("simulate.call.body")}</Text>
             <View style={{ marginTop: 12 }}>

@@ -6,5 +6,5 @@ const digits = (p: string) => p.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "")
 export const links = {
   whatsapp: (p: string) => `whatsapp://send?phone=91${digits(p)}`,
   tel: (p: string) => `tel:+91${digits(p)}`,
-  support: () => `mailto:${process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? "support@example.com"}?subject=${encodeURIComponent("VAIRA support or suggestion")}`,
+  support: () => `mailto:${process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? "support@example.com"}?subject=${encodeURIComponent("INNAYA support or suggestion")}`,
 };

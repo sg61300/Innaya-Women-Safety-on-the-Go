@@ -1,7 +1,7 @@
 import { Image, type ImageStyle, type StyleProp } from "react-native";
 import type { Button3DIcon } from "./Button3D";
 
-// VAIRA v2 raster icon set (founder b14). The sliced, halo-cleaned rose-gold +
+// INNAYA v2 raster icon set (founder b14). The sliced, halo-cleaned rose-gold +
 // plum icons in assets/icons/. Metro needs static require() literals, so the map
 // is spelled out. These are brand-coloured artwork (not monochrome glyphs), so
 // they are NOT tinted — the palette already lives in the artwork.
@@ -11,13 +11,13 @@ const ICONS = {
   sos: require("../../assets/icons/sos.webp"),
   simulate: require("../../assets/icons/simulate.webp"),
   profile: require("../../assets/icons/profile.webp"),
-  call: require("../../assets/icons/call.webp"),
+  call: require("../../assets/icons/call.png"),
   video: require("../../assets/icons/video.webp"),
   mic: require("../../assets/icons/mic.webp"),
   bell: require("../../assets/icons/bell.webp"),
   details: require("../../assets/icons/details.webp"),
   guardians: require("../../assets/icons/guardians.webp"),
-  password: require("../../assets/icons/password.webp"),
+  password: require("../../assets/icons/password.png"),
   language: require("../../assets/icons/language.webp"),
   palette: require("../../assets/icons/palette.webp"),
   privacy: require("../../assets/icons/privacy.webp"),

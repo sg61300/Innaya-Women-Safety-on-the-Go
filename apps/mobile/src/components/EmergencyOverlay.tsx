@@ -33,7 +33,9 @@ export function EmergencyOverlay() {
   const challengeOpen = useJourney((s) => s.challenge !== null);
   const isSiren = alarmMode === "siren";
   const isCritical = rawState === "CRITICAL" || rawState === "CANCEL_HOLD";
-  const visible = !challengeOpen && (rawState === "EMERGENCY" || (isCritical && isSiren));
+  // Fix AD round 2: while a guardian cancel is waiting her screen stays normal.
+  const cancelWaiting = useJourney((s) => !!s.ctx.cancelWaiting || !!s.ctx.quietAlarm);
+  const visible = !challengeOpen && !cancelWaiting && (rawState === "EMERGENCY" || (isCritical && isSiren));
   const state = (visible ? rawState : "EMERGENCY") as "EMERGENCY" | "CRITICAL" | "CANCEL_HOLD";
 
   const [safewordOpen, setSafewordOpen] = useState(false); // EMERGENCY de-escalation
@@ -53,7 +55,7 @@ export function EmergencyOverlay() {
     setAccepted(false);
     setBusy(false);
     busyRef.current = false;
-  }, [rawState]);
+  }, [rawState, cancelWaiting]);
 
   // X5a: a practice drill routes the cancel/proof flow to the SIMULATION deps
   // (self-email, no guardian) instead of the real guardian deps.
@@ -109,7 +111,17 @@ export function EmergencyOverlay() {
 
   const guardiansPending = useJourney((s) => s.guardiansPending);
   const sirenStatus = useJourney((s) => s.sirenStatus);
-  const items: ActionLogItem[] = useMemo(() => [
+  // In a practice drill nothing is actually sent (practice suppresses location,
+  // siren, guardian calls), so the checklist uses "would be" copy; filled
+  // ticks per founder ruling 2026-10-13 (s33). Real mode
+  // (practice === false) is unchanged, byte for byte.
+  const items: ActionLogItem[] = useMemo(() => practice ? [
+    { label: i18n.t("emergency.logGuardiansPractice"), done: true },
+    { label: i18n.t("emergency.logLocationPractice"), done: true },
+    { label: i18n.t("emergency.logNearbyPractice"), done: true },
+    { label: i18n.t("emergency.logLiveFeedPractice"), done: true },
+    { label: i18n.t("emergency.logSirenPractice"), done: true },
+  ] : [
     guardiansPending
       ? { label: i18n.t("emergency.logGuardiansPending"), done: false }
       : { label: i18n.t("emergency.logGuardians"), done: true },
@@ -117,7 +129,7 @@ export function EmergencyOverlay() {
     { label: i18n.t("emergency.logNearby"), done: state === "CRITICAL" || state === "CANCEL_HOLD" },
     { label: i18n.t("emergency.logLiveFeed"), done: state === "EMERGENCY" || state === "CRITICAL" || state === "CANCEL_HOLD" },
     { label: i18n.t("emergency.logSiren"), done: (state === "CRITICAL" || state === "EMERGENCY") && sirenStatus !== "error" },
-  ], [state, guardiansPending, sirenStatus]);
+  ], [state, guardiansPending, sirenStatus, practice]);
 
   return (
     <Modal
@@ -132,13 +144,12 @@ export function EmergencyOverlay() {
         <CancelFlow
           hasJourney={!!journeyId}
           deps={deps}
-          onResolved={(v) => { if (v === "cancel") setCancelOpen(false); /* reraise: CancelFlow shows the kept-on notice */ }}
           onSirenResume={isSiren ? () => runner.resumeSirenAfterCancel() : undefined}
           onExit={() => { setCancelOpen(false); if (isSiren) runner.resumeSirenAfterCancel(); }}
           simulation={practice ? { email: simEmail } : null}
         />
       ) : (
-        <TickingLayout rawState={rawState} state={state} items={items} onCancelPress={onCancelPress} sirenRing={isCritical && isSiren} />
+        <TickingLayout rawState={rawState} state={state} items={items} onCancelPress={onCancelPress} sirenRing={isCritical && isSiren} practice={practice} />
       )}
 
       {safewordOpen && !cancelOpen ? (
@@ -165,12 +176,14 @@ const TickingLayout = memo(function TickingLayout({
   items,
   onCancelPress,
   sirenRing,
+  practice,
 }: {
   rawState: string;
   state: "EMERGENCY" | "CRITICAL" | "CANCEL_HOLD";
   items: ActionLogItem[];
   onCancelPress: () => void;
   sirenRing?: boolean;
+  practice?: boolean;
 }) {
   const [elapsedS, setElapsedS] = useState(0);
   const baseRef = useRef(Date.now());
@@ -182,7 +195,7 @@ const TickingLayout = memo(function TickingLayout({
   }, [rawState]);
 
   return (
-    <EmergencyLayout state={state} elapsedS={elapsedS} items={items} onCancelPress={onCancelPress}>
+    <EmergencyLayout state={state} elapsedS={elapsedS} items={items} onCancelPress={onCancelPress} practice={practice}>
       {sirenRing ? (
         <View testID="siren-countdown" style={{ alignItems: "center" }}>
           <CountdownRing seconds={Math.max(0, SIREN_SEC - elapsedS)} total={SIREN_SEC} />

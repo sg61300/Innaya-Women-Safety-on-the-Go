@@ -9,7 +9,7 @@ import { useSession } from "../store/session";
 // createJourney logic itself is covered RED→GREEN in journeyCreate.test.ts.
 
 const mockReplace = jest.fn();
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: mockReplace, push: jest.fn(), navigate: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: mockReplace, push: jest.fn(), navigate: jest.fn() }), useNavigation: () => ({ addListener: () => () => {}, dispatch: jest.fn() }) }));
 
 jest.mock("expo-camera", () => {
   const React2 = require("react");
@@ -81,7 +81,9 @@ jest.mock("../lib/supabase", () => ({
   supabase: {
     auth: { getSession: jest.fn().mockResolvedValue({ data: { session: { access_token: "tok" } } }) },
     from: (t: string) =>
-      t === "blacklisted_vehicles"
+      t === "contacts"
+        ? { select: () => ({ eq: () => Promise.resolve({ data: [{ email: "a-guardian-email" }], error: null }) }) }
+        : t === "blacklisted_vehicles"
         ? { select: () => ({ eq: () => ({ maybeSingle: mockMaybeSingle }) }) }
         : { select: () => ({ eq: () => ({ single: mockSingle }) }) },
     rpc: jest.fn().mockResolvedValue({ data: [] }),
@@ -89,6 +91,8 @@ jest.mock("../lib/supabase", () => ({
 }));
 
 import JourneyNewScreen from "../../app/(user)/journey/new";
+// journey/new now carries intro-tour targets (TourTarget needs the provider).
+import { TourProvider } from "../components/tour/TourProvider";
 
 const renderScreen = async () => {
   useSession.setState({ userId: "u1" });
@@ -96,7 +100,7 @@ const renderScreen = async () => {
   await act(async () => {
     out = render(
       <ThemeProvider>
-        <JourneyNewScreen />
+        <TourProvider><JourneyNewScreen /></TourProvider>
       </ThemeProvider>
     );
   });

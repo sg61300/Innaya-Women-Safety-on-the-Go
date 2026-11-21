@@ -20,6 +20,7 @@ export function AreYouSafeLayout({
   onDanger,
   speakerPromptFired,
   error,
+  practice = false,
 }: {
   seconds: number;
   total: number;
@@ -29,6 +30,9 @@ export function AreYouSafeLayout({
   onDanger: () => void;
   speakerPromptFired: boolean;
   error?: string | null;
+  // Drill only: show a "Practice · not a real alert" badge. Defaults false so the
+  // real check-in renders exactly as before (byte-identical).
+  practice?: boolean;
 }) {
   const { p, d } = useTheme();
   const urgent = seconds <= 2;
@@ -44,6 +48,10 @@ export function AreYouSafeLayout({
         testID="areyousafe-layout"
         style={{ flex: 1, backgroundColor: p.brandSoft, alignItems: "center", justifyContent: "center", padding: 24, gap: 18 }}
       >
+        {practice ? (
+          <Chip kind="brand" label={i18n.t("practice.notRealAlert")} />
+        ) : null}
+
         <Chip
           kind={urgent ? "critical" : "brand"}
           label={i18n.t(urgent ? "areYouSafe.pillAlerting" : "areYouSafe.pillCheckIn")}

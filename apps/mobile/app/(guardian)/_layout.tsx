@@ -22,6 +22,10 @@ export default function GuardianLayout() {
         router.push({ pathname: "/(guardian)/confirm-safe", params: { journeyId: String(data.journeyId), requestId: data.requestId ? String(data.requestId) : "", link: data.link ? String(data.link) : "" } });
       else if (data?.kind === "cancel_attempt" && data.journeyId)
         router.push({ pathname: "/(guardian)/confirm-safe", params: { journeyId: String(data.journeyId) } });
+      // An alarm or phone-silent push opens that journey's monitor screen (founder Q90:
+      // "tap opens right screen").
+      else if (data?.journeyId && (data.state || data.kind === "alarm_expired"))
+        router.push({ pathname: "/(guardian)/monitor/[journeyId]", params: { journeyId: String(data.journeyId) } });
     };
     const sub = Notifications.addNotificationResponseReceivedListener((resp) =>
       open(resp?.notification?.request?.content?.data)

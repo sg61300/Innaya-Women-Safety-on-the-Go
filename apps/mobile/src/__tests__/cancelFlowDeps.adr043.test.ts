@@ -1,5 +1,5 @@
-// ADR-043 item 5 — the real CancelFlow dependency factory: 409 surfacing and the
-// 5 s poll fallback when the verdict realtime drops.
+// ADR-043 item 5 — the real CancelFlow dependency factory: 409 surfacing. The verdict
+// watch moved to services/cancelWatch (Fix AD round 2; see cancelWaiting.g2g8.test).
 jest.useFakeTimers();
 
 const mockSend = jest.fn();
@@ -38,36 +38,3 @@ it("createRequest throws NotCancellableError on a 409 and re-applies CANCEL_REQU
   await expect(deps.createRequest("word")).rejects.toBeInstanceOf(NotCancellableError);
 });
 
-it("realtime drop → the 5 s poll delivers the verdict and drives the local runner", async () => {
-  mockPost.mockResolvedValueOnce({ requestId: "r1", asked: 3 });
-  const deps = makeCancelFlowDeps();
-  await deps.createRequest("word"); // sets the request id the poll reads
-  mockSend.mockClear();
-
-  const cb = jest.fn();
-  mockGet.mockResolvedValue({ verdict: "reraise" });
-  const off = deps.subscribeVerdict(cb);
-
-  await jest.advanceTimersByTimeAsync(5000); // one poll tick
-  expect(mockGet).toHaveBeenCalledWith("/api/cancel-request/r1");
-  expect(cb).toHaveBeenCalledWith("reraise");
-  expect(mockSend).toHaveBeenCalledWith({ type: "GUARDIAN_SAYS_WRONG" }); // local re-raise
-
-  off();
-  expect(mockRemoveChannel).toHaveBeenCalled();
-});
-
-it("a 'pending' poll result keeps waiting (no callback, no local event)", async () => {
-  mockPost.mockResolvedValueOnce({ requestId: "r1", asked: 3 });
-  const deps = makeCancelFlowDeps();
-  await deps.createRequest("word");
-  mockSend.mockClear();
-
-  const cb = jest.fn();
-  mockGet.mockResolvedValue({ verdict: "pending" });
-  const off = deps.subscribeVerdict(cb);
-  await jest.advanceTimersByTimeAsync(5000);
-  expect(cb).not.toHaveBeenCalled();
-  expect(mockSend).not.toHaveBeenCalled();
-  off();
-});

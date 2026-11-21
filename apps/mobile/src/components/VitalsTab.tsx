@@ -26,7 +26,7 @@ const SOURCES: { name: SourceName; labelKey: string; enabled: boolean }[] = [
 
 const DEMO_STEP_MS = 2000; // founder spec: update every 2 s
 
-function Tile({ label, value, unit }: { label: string; value: string; unit: string }) {
+function Tile({ label, value, unit }: { label: string; value: string | null; unit: string }) {
   const { d } = useTheme();
   return (
     <View
@@ -37,8 +37,8 @@ function Tile({ label, value, unit }: { label: string; value: string; unit: stri
     >
       <Text variant="caption" color="muted">{label}</Text>
       <View style={{ flexDirection: "row", alignItems: "baseline", gap: 4 }}>
-        <Text variant="subtitle">{value}</Text>
-        <Text variant="caption" color="muted">{unit}</Text>
+        <Text variant="subtitle">{value ?? i18n.t("vitals.noReading")}</Text>
+        {value != null && <Text variant="caption" color="muted">{unit}</Text>}
       </View>
     </View>
   );
@@ -55,10 +55,10 @@ export function VitalsTab() {
   const [scenario, setScenario] = useState<DemoScenario | null>(null);
   const demoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const hr = sample?.hr != null ? String(Math.round(sample.hr)) : "—";
-  const hrv = sample?.hrv != null ? String(Math.round(sample.hrv)) : "—";
-  const spo2 = sample?.spo2 != null ? String(Math.round(sample.spo2)) : "—";
-  const breathing = sample?.breathing != null ? String(Math.round(sample.breathing)) : "—";
+  const hr = sample?.hr != null ? String(Math.round(sample.hr)) : null;
+  const hrv = sample?.hrv != null ? String(Math.round(sample.hrv)) : null;
+  const spo2 = sample?.spo2 != null ? String(Math.round(sample.spo2)) : null;
+  const breathing = sample?.breathing != null ? String(Math.round(sample.breathing)) : null;
 
   const stopDemo = () => {
     if (demoTimer.current) { clearInterval(demoTimer.current); demoTimer.current = null; }

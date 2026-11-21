@@ -12,7 +12,6 @@ jest.mock("expo-camera", () => {
 import { act, fireEvent, render } from "@testing-library/react-native";
 import { ThemeProvider } from "../theme";
 import { CancelFlow, type CancelFlowDeps } from "../components/CancelFlow";
-type CancelVerdict = "cancel" | "keep" | "reraise" | "pending";
 
 // The AreYouSafeModal.test pattern: mount with `await render` + an empty
 // `await act`, and wrap EVERY interaction in `await act(async () => …)` so each
@@ -24,20 +23,18 @@ const mount = async (el: React.ReactElement) => {
   return utils;
 };
 
-function makeDeps(over: Partial<CancelFlowDeps> = {}): { deps: CancelFlowDeps; emit: (v: CancelVerdict) => void; createRequest: jest.Mock; uploadMedia: jest.Mock } {
-  let cb: ((v: CancelVerdict) => void) | null = null;
+function makeDeps(over: Partial<CancelFlowDeps> = {}): { deps: CancelFlowDeps; createRequest: jest.Mock; uploadMedia: jest.Mock } {
   const createRequest = jest.fn().mockResolvedValue({ askedCount: 3 });
   const uploadMedia = jest.fn().mockResolvedValue("cancel/j1/r1.jpg");
   const deps: CancelFlowDeps = {
     verifyPassword: jest.fn().mockResolvedValue(true),
     verifyWord: jest.fn().mockResolvedValue(true),
     createRequest,
-    subscribeVerdict: jest.fn((c: (v: CancelVerdict) => void) => { cb = c; return () => { cb = null; }; }),
     uploadMedia,
     captureMedia: { takePhoto: jest.fn().mockResolvedValue("file:///tmp/proof.jpg"), recordVideo: jest.fn().mockResolvedValue("file:///tmp/proof.mp4") },
     ...over,
   };
-  return { deps, emit: (v) => cb?.(v), createRequest: createRequest as jest.Mock, uploadMedia: uploadMedia as jest.Mock };
+  return { deps, createRequest: createRequest as jest.Mock, uploadMedia: uploadMedia as jest.Mock };
 }
 
 type Utils = Awaited<ReturnType<typeof mount>>;
@@ -47,21 +44,21 @@ const passPassword = async (el: Utils) => { await setText(el, "cancel-password-i
 
 it("password success with a journey advances to the word step", async () => {
   const { deps } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await passPassword(el);
   expect(el.getByTestId("cancel-step-word")).toBeTruthy();
 });
 
 it("password success with NO journey skips to the media/proof step", async () => {
   const { deps } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney={false} deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney={false} deps={deps} />);
   await passPassword(el);
   expect(el.getByTestId("cancel-step-media")).toBeTruthy();
 });
 
 it("a wrong journey word keeps the word step and never opens a request", async () => {
   const { deps, createRequest } = makeDeps({ verifyWord: jest.fn().mockResolvedValue(false) });
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await passPassword(el);
   await setText(el, "cancel-word-input", "wrong");
   await press(el, "cancel-word-submit");
@@ -70,52 +67,27 @@ it("a wrong journey word keeps the word step and never opens a request", async (
   expect(createRequest).not.toHaveBeenCalled();
 });
 
-it("a correct word opens a word cancel request and waits, showing the asked count", async () => {
+it("a correct word opens a word cancel request and leaves the steps", async () => {
   const { deps, createRequest } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await passPassword(el);
   await setText(el, "cancel-word-input", "bluebird");
   await press(el, "cancel-word-submit");
-  expect(el.getByTestId("cancel-step-waiting")).toBeTruthy();
+  expect(el.queryByTestId("cancel-step-word")).toBeNull();
   expect(createRequest).toHaveBeenCalledWith("word");
-  expect(el.getByTestId("cancel-wait-asked").props.children).toContain("3");
 });
 
 it("Forgot it jumps to the media step", async () => {
   const { deps } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await passPassword(el);
   await press(el, "cancel-forgot");
   expect(el.getByTestId("cancel-step-media")).toBeTruthy();
 });
 
-it("a Safe verdict resolves the flow as cancelled", async () => {
-  const onResolved = jest.fn();
-  const { deps, emit } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={onResolved} />);
-  await passPassword(el);
-  await setText(el, "cancel-word-input", "bluebird");
-  await press(el, "cancel-word-submit");
-  await act(async () => emit("cancel"));
-  expect(el.getByTestId("cancel-step-cancelled")).toBeTruthy();
-  expect(onResolved).toHaveBeenCalledWith("cancel");
-});
-
-it("a reraise verdict resolves the flow as reraise and shows the kept-on notice", async () => {
-  const onResolved = jest.fn();
-  const { deps, emit } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={onResolved} />);
-  await passPassword(el);
-  await setText(el, "cancel-word-input", "bluebird");
-  await press(el, "cancel-word-submit");
-  await act(async () => emit("reraise"));
-  expect(el.getByTestId("cancel-step-reraised")).toBeTruthy();
-  expect(onResolved).toHaveBeenCalledWith("reraise");
-});
-
 it("an upload failure at step 4 shows an error and NEVER creates the request", async () => {
   const { deps, createRequest } = makeDeps({ uploadMedia: jest.fn().mockRejectedValue(new Error("offline")) });
-  const el = await mount(<CancelFlow hasJourney={false} deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney={false} deps={deps} />);
   await passPassword(el);
   await press(el, "cancel-media-capture"); // photo mode default
   expect(el.getByTestId("cancel-error")).toBeTruthy();
@@ -125,17 +97,17 @@ it("an upload failure at step 4 shows an error and NEVER creates the request", a
 
 it("a successful photo uploads then opens a photo request with the media path", async () => {
   const { deps, createRequest, uploadMedia } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney={false} deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney={false} deps={deps} />);
   await passPassword(el);
   await press(el, "cancel-media-capture");
-  expect(el.getByTestId("cancel-step-waiting")).toBeTruthy();
+  expect(el.queryByTestId("cancel-step-media")).toBeNull();
   expect(uploadMedia).toHaveBeenCalled();
   expect(createRequest).toHaveBeenCalledWith("photo", "cancel/j1/r1.jpg");
 });
 
 it("two wrong passwords lock the third attempt (a locked press is ignored)", async () => {
   const { deps } = makeDeps({ verifyPassword: jest.fn().mockResolvedValue(false) });
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await setText(el, "cancel-password-input", "x");
   await press(el, "cancel-password-submit");
   await setText(el, "cancel-password-input", "y");
@@ -150,7 +122,7 @@ it("two wrong passwords lock the third attempt (a locked press is ignored)", asy
 it("rule 5: the 2nd wrong password fires onSirenResume once (siren starts in Siren mode)", async () => {
   const onSirenResume = jest.fn();
   const { deps } = makeDeps({ verifyPassword: jest.fn().mockResolvedValue(false) });
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} onSirenResume={onSirenResume} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} onSirenResume={onSirenResume} />);
   await setText(el, "cancel-password-input", "x");
   await press(el, "cancel-password-submit");
   expect(onSirenResume).not.toHaveBeenCalled();
@@ -162,7 +134,7 @@ it("rule 5: the 2nd wrong password fires onSirenResume once (siren starts in Sir
 it("409 (not cancellable) at step 2 shows 'the alarm is not active' and stays on the word step", async () => {
   const notCancellable = Object.assign(new Error("409"), { name: "NotCancellableError" });
   const { deps } = makeDeps({ createRequest: jest.fn().mockRejectedValue(notCancellable) });
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await passPassword(el);
   await setText(el, "cancel-word-input", "bluebird");
   await press(el, "cancel-word-submit");
@@ -172,7 +144,7 @@ it("409 (not cancellable) at step 2 shows 'the alarm is not active' and stays on
 
 it("offline at step 2: createRequest rejects → error shown, stays on the word step", async () => {
   const { deps } = makeDeps({ createRequest: jest.fn().mockRejectedValue(new Error("Network request failed")) });
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={jest.fn()} />);
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await passPassword(el);
   await setText(el, "cancel-word-input", "bluebird");
   await press(el, "cancel-word-submit");
@@ -180,14 +152,24 @@ it("offline at step 2: createRequest rejects → error shown, stays on the word 
   expect(el.getByTestId("cancel-step-word")).toBeTruthy();
 });
 
-it("a majority 'keep' verdict resolves the flow as reraise (alarm kept on)", async () => {
-  const onResolved = jest.fn();
-  const { deps, emit } = makeDeps();
-  const el = await mount(<CancelFlow hasJourney deps={deps} onResolved={onResolved} />);
+// G1 (founder Q101, Q96 replaced): the correct word opens the request to the guardians and
+// there is no countdown: the flow is done and her screen goes normal.
+it("G1: correct word opens the guardian request, with no countdown and no waiting screen", async () => {
+  const { deps, createRequest } = makeDeps();
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
   await passPassword(el);
-  await setText(el, "cancel-word-input", "bluebird");
+  await setText(el, "cancel-word-input", "word");
   await press(el, "cancel-word-submit");
-  await act(async () => emit("keep"));
-  expect(el.getByTestId("cancel-step-reraised")).toBeTruthy();
-  expect(onResolved).toHaveBeenCalledWith("reraise");
+  expect(createRequest).toHaveBeenCalledWith("word");
+  expect(el.queryByTestId("cancel-wait-bar")).toBeNull();
+  expect(el.queryByTestId("cancel-step-waiting")).toBeNull();
+});
+
+it("G8: a failed send on the word step never says the word was wrong", async () => {
+  const { deps } = makeDeps({ createRequest: jest.fn().mockRejectedValue(new Error("/api/cancel-request 500")) });
+  const el = await mount(<CancelFlow hasJourney deps={deps} />);
+  await passPassword(el);
+  await setText(el, "cancel-word-input", "word");
+  await press(el, "cancel-word-submit");
+  expect(el.getByTestId("cancel-error")).toHaveTextContent("Could not send your request. Please try again.");
 });
