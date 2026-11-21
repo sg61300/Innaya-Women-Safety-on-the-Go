@@ -1,4 +1,4 @@
-import { SafeButton } from "./SafeButton";
+import { SubmitButton } from "./SubmitButton";
 
 // ADR-043 guardian cancel-request card. Server-rendered, the only client JS greys Safe at its
 // deadline on a page left open: the two votes are plain POST forms to /api/cancel-request/<id>/vote?t=<voteToken> (the
@@ -56,16 +56,8 @@ export function CancelRequestCard({
         </p>
       ) : (
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <form method="post" action={action} style={{ flex: 1, minWidth: 140 }}>
-            <input type="hidden" name="safe" value="true" />
-            <SafeButton closed={safeClosed} until={safeUntil} />
-          </form>
-          <form method="post" action={action} style={{ flex: 1, minWidth: 140 }}>
-            <input type="hidden" name="safe" value="false" />
-            <button type="submit" style={{ width: "100%", padding: "14px", font: "700 16px system-ui", color: "#fff", background: "#b91c1c", border: 0, borderRadius: 8 }}>
-              Not safe — keep it on
-            </button>
-          </form>
+          <SubmitButton action={action} value="true" label="Safe — cancel the alarm" background="#065f46" closed={safeClosed} until={safeUntil} />
+          <SubmitButton action={action} value="false" label="Not safe — keep it on" background="#b91c1c" />
         </div>
       )}
     </section>

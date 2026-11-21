@@ -4,7 +4,7 @@ import { logEvent } from "./events";
 import { notifyContactsWebPush } from "./webPush";
 import type { ProtocolState } from "@vaira/core";
 
-type MailTransport = { sendMail: (message: { from: string; to: string[]; subject: string; html: string }) => Promise<unknown> };
+type MailTransport = { sendMail: (message: { from: string; to: string[]; subject: string; html: string; text: string; replyTo: string; headers: Record<string, string> }) => Promise<unknown> };
 const nodemailer: { createTransport: (options: unknown) => MailTransport } = require("nodemailer");
 const GUARDIAN_SENDER = (process.env.GUARDIAN_SENDER ?? "support@example.com").trim().toLowerCase();
 
@@ -46,6 +46,29 @@ export async function sendPush(
   return res?.ok !== false;
 }
 
+// Plain-text fallback derived from the HTML body: keeps link URLs ("label (url)"), turns block
+// ends into line breaks, strips the remaining tags and decodes the five escaped characters. Every
+// multipart email should carry a text/plain part — HTML-only mail scores worse with spam filters
+// and is unreadable in text-only clients.
+export function htmlToText(html: string): string {
+  return String(html ?? "")
+    .replace(/<a\b[^>]*\bhref="([^"]*)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
+    .replace(/<\/(p|div|h[1-6]|li|tr)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]+/g, " ")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export async function sendEmail(to: string[], subject: string, html: string) {
   if (!to.length) return;
   const user = (process.env.GMAIL_SMTP_USER ?? GUARDIAN_SENDER).trim().toLowerCase();
@@ -56,7 +79,19 @@ export async function sendEmail(to: string[], subject: string, html: string) {
     service: "gmail",
     auth: { user: GUARDIAN_SENDER, pass: password },
   });
-  await transport.sendMail({ from: `INNAYA <${GUARDIAN_SENDER}>`, to, subject, html });
+  // Free deliverability hygiene (founder "Free hygiene only"): a text/plain alternative, a
+  // Reply-To the guardian can reply straight to, and a List-Unsubscribe that is a mailto ONLY
+  // (founder "Unsubscribe = mail them" — handled by hand). No one-click unsubscribe, no
+  // List-Unsubscribe-Post, no endpoint that could switch these safety alerts off.
+  await transport.sendMail({
+    from: `INNAYA <${GUARDIAN_SENDER}>`,
+    to,
+    subject,
+    html,
+    text: htmlToText(html),
+    replyTo: GUARDIAN_SENDER,
+    headers: { "List-Unsubscribe": `<mailto:${GUARDIAN_SENDER}?subject=unsubscribe>` },
+  });
 }
 
 // Notify a traveller's guardians on a state change. AMBER pushes only the active
