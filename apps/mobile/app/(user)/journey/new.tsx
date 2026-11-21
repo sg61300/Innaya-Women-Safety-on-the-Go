@@ -27,6 +27,7 @@ import { supabase } from "../../../src/lib/supabase";
 import { useSession } from "../../../src/store/session";
 import { CITY_OPTIONS, type CityKey } from "../../../src/lib/cities";
 import i18n from "../../../src/i18n";
+import { TourTarget } from "../../../src/components/tour/TourProvider";
 
 type Place = (Pt & { label: string }) | null;
 
@@ -313,12 +314,16 @@ export default function JourneyNewScreen() {
         {i18n.t("journeyNew.title")}
       </Text>
 
+      {/* Intro tour targets (founder 2026-11-17 "Add the targets"): cityGps, route, safeWord. */}
+      <TourTarget id="cityGps">
       <Text variant="label" color="muted" style={{ marginTop: 12, marginBottom: 6 }}>
         {i18n.t("journeyNew.cityLabel")}
       </Text>
       <CityPicker value={city} onChange={setCity} />
+      </TourTarget>
 
       {/* Route */}
+      <TourTarget id="route">
       <Text variant="label" color="muted" style={{ marginTop: 16, marginBottom: 6 }}>
         {i18n.t("journeyNew.from")}
       </Text>
@@ -384,6 +389,7 @@ export default function JourneyNewScreen() {
         }}
       />
       {to ? <Text variant="caption" color="muted">{to.label}</Text> : null}
+      </TourTarget>
 
       {dangerZone ? (
         <View testID="journey-dangerzone" style={{ marginTop: 10 }}>
@@ -528,7 +534,7 @@ export default function JourneyNewScreen() {
       ) : null}
 
       {/* Safe word */}
-      <View style={{ marginTop: 4 }}>
+      <TourTarget id="safeWord" style={{ marginTop: 4 }}>
         {/* G8: the safe word gates arming, so mark it required (label asterisk + helper). */}
         <Field
           label={`${i18n.t("journeyNew.safeWord")} *`}
@@ -548,7 +554,7 @@ export default function JourneyNewScreen() {
             {i18n.t("journeyNew.safeWordUsed")}
           </Text>
         ) : null}
-      </View>
+      </TourTarget>
 
       {/* Selfie */}
       <Text variant="label" color="muted" style={{ marginTop: 16, marginBottom: 6 }}>

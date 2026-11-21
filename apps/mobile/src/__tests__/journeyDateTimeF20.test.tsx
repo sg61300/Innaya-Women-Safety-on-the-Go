@@ -37,11 +37,13 @@ jest.mock("../lib/supabase", () => ({
 }));
 
 import JourneyNewScreen from "../../app/(user)/journey/new";
+// journey/new now carries intro-tour targets (TourTarget needs the provider).
+import { TourProvider } from "../components/tour/TourProvider";
 
 const renderScreen = async () => {
   useSession.setState({ userId: "u1" });
   let out: ReturnType<typeof render>;
-  await act(async () => { out = render(<ThemeProvider><JourneyNewScreen /></ThemeProvider>); });
+  await act(async () => { out = render(<ThemeProvider><TourProvider><JourneyNewScreen /></TourProvider></ThemeProvider>); });
   return out!;
 };
 

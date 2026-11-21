@@ -21,7 +21,7 @@ function Harness() {
 }
 
 // B2: the tour must navigate() between step routes, not push(). push() stacks a
-// fresh screen per route change, so Back after "Done" unwinds all 12 steps;
+// fresh screen per route change, so Back after "Done" unwinds all 11 steps;
 // navigate() reuses the route already in the stack and keeps Back at the
 // pre-tour screen. Asserting navigate() is called and push() is not locks that.
 test("start navigates (not push) so Back returns to the pre-tour screen (B2)", async () => {
